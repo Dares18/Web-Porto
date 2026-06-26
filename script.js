@@ -295,8 +295,8 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             // Hide the enter prompt
             if (enterPrompt) enterPrompt.classList.add('hidden');
 
-            // Start animation after a tiny delay for prompt fade-out
-            setTimeout(animate, 200);
+            // Start animation after prompt fully fades out
+            setTimeout(animate, 600);
         }
 
         splash.addEventListener('click', onUserGesture);

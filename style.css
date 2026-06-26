@@ -176,68 +176,139 @@ body.splash-active {
     .splash-marquee { font-size: 1.5rem; }
 }
 
-/* Click-to-enter prompt */
+/* Interactive enter prompt — centered ring */
 .splash-enter {
     position: absolute;
-    bottom: 12%;
-    left: 50%;
-    transform: translateX(-50%);
+    inset: 0;
     z-index: 3;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    justify-content: center;
     cursor: pointer;
-    animation: splashEnterPulse 2s ease-in-out infinite;
+    gap: 2rem;
 }
 
-.splash-enter-icon {
+/* Ring container */
+.splash-enter-ring {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Concentric pulse rings */
+.splash-ring-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    animation: splashRingExpand 2.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.splash-ring-pulse-2 {
+    animation-delay: 0.6s;
+}
+
+.splash-ring-pulse-3 {
+    animation-delay: 1.2s;
+}
+
+@keyframes splashRingExpand {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.8;
+        border-color: rgba(255, 255, 255, 0.35);
+    }
+    80% {
+        transform: scale(1.6);
+        opacity: 0;
+        border-color: rgba(255, 255, 255, 0);
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+/* Core circle with icon */
+.splash-ring-core {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 2rem;
-    color: rgba(255, 255, 255, 0.6);
-    transition: color 0.3s ease;
+    color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05),
+                inset 0 0 20px rgba(255, 255, 255, 0.03);
 }
 
+.splash-enter:hover .splash-ring-core {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    transform: scale(1.08);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.12),
+                inset 0 0 25px rgba(255, 255, 255, 0.06);
+}
+
+.splash-enter:active .splash-ring-core {
+    transform: scale(0.95);
+    transition-duration: 0.1s;
+}
+
+/* Text label */
 .splash-enter-text {
     font-family: var(--font-sans);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 400;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(255, 255, 255, 0.35);
     transition: color 0.3s ease;
-}
-
-.splash-enter:hover .splash-enter-icon {
-    color: rgba(255, 255, 255, 0.9);
+    animation: splashTextBreath 2.4s ease-in-out infinite;
 }
 
 .splash-enter:hover .splash-enter-text {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.6);
 }
 
-@keyframes splashEnterPulse {
-    0%, 100% {
-        opacity: 0.6;
-        transform: translateX(-50%) translateY(0);
-    }
-    50% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(-4px);
-    }
+@keyframes splashTextBreath {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
-/* Hide prompt once animation starts */
+/* Smooth hide — fade + scale down + blur away */
 .splash-enter.hidden {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    transform: scale(0.85);
+    filter: blur(8px);
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
 }
 
 @media (max-width: 768px) {
-    .splash-enter { bottom: 10%; }
-    .splash-enter-icon { font-size: 1.6rem; }
-    .splash-enter-text { font-size: 0.75rem; }
+    .splash-enter-ring { width: 100px; height: 100px; }
+    .splash-ring-core { width: 60px; height: 60px; font-size: 1.6rem; }
+    .splash-enter-text { font-size: 0.7rem; letter-spacing: 0.15em; }
+}
+
+@media (max-width: 480px) {
+    .splash-enter-ring { width: 88px; height: 88px; }
+    .splash-ring-core { width: 52px; height: 52px; font-size: 1.4rem; }
+    .splash-enter-text { font-size: 0.65rem; }
 }
 /* ========== END INTRO SPLASH ========== */
 
