@@ -1,3 +1,91 @@
+// ========== INTRO SPLASH ANIMATION ORCHESTRATOR ==========
+// Force scroll to top on every page load / refresh / reopen
+window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+(function runSplashAnimation() {
+    const splash = document.getElementById('intro-splash');
+    if (!splash) return;
+
+    const logo = splash.querySelector('.splash-logo');
+    const textLines = splash.querySelectorAll('.splash-text');
+    const marqueeLines = splash.querySelectorAll('.splash-marquee');
+
+    // Utility: wait ms
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    // Utility: show a line with clip-path reveal
+    function showLine(el) {
+        el.classList.remove('fade-out');
+        el.style.display = '';
+        // Force reflow so transition fires
+        void el.offsetWidth;
+        el.classList.add('visible');
+    }
+
+    // Utility: fade out a line
+    function hideLine(el) {
+        el.classList.remove('visible');
+        el.classList.add('fade-out');
+    }
+
+    async function animate() {
+        // Hide all lines initially
+        splash.querySelectorAll('.splash-line').forEach(l => {
+            l.style.display = 'none';
+        });
+
+        // Phase 1: Logo appears (0s)
+        await wait(300);
+        logo.style.display = '';
+        showLine(logo);
+
+        // Phase 2: Spotlight text from About Me (cycle one at a time)
+        await wait(800);
+
+        for (let i = 0; i < textLines.length; i++) {
+            // Hide previous text line
+            if (i > 0) hideLine(textLines[i - 1]);
+            await wait(i > 0 ? 300 : 0);
+            showLine(textLines[i]);
+            await wait(600);
+        }
+
+        // Phase 3: Marquee text (cycle one at a time, replacing spotlight)
+        hideLine(textLines[textLines.length - 1]);
+        await wait(300);
+
+        for (let i = 0; i < marqueeLines.length; i++) {
+            if (i > 0) hideLine(marqueeLines[i - 1]);
+            await wait(i > 0 ? 300 : 0);
+            showLine(marqueeLines[i]);
+            await wait(550);
+        }
+
+        // Phase 4: Exit - fade everything, then curtain split
+        await wait(300);
+        splash.classList.add('exit');
+
+        // Wait for curtain animation to complete
+        await wait(900);
+
+        // Cleanup
+        splash.classList.add('done');
+        document.body.classList.remove('splash-active');
+    }
+
+    // Start animation once fonts + icons are somewhat ready
+    if (document.readyState === 'complete') {
+        animate();
+    } else {
+        window.addEventListener('load', () => {
+            // Small extra delay so Phosphor Icons have rendered
+            setTimeout(animate, 150);
+        });
+    }
+})();
+// ========== END INTRO SPLASH ==========
+
 // Live Clock functionality
 function updateClock() {
     const clockElement = document.getElementById('live-clock');
