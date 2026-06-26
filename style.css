@@ -175,6 +175,70 @@ body.splash-active {
     .splash-text { font-size: 1.3rem; }
     .splash-marquee { font-size: 1.5rem; }
 }
+
+/* Click-to-enter prompt */
+.splash-enter {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    animation: splashEnterPulse 2s ease-in-out infinite;
+}
+
+.splash-enter-icon {
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s ease;
+}
+
+.splash-enter-text {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    transition: color 0.3s ease;
+}
+
+.splash-enter:hover .splash-enter-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.splash-enter:hover .splash-enter-text {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes splashEnterPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-4px);
+    }
+}
+
+/* Hide prompt once animation starts */
+.splash-enter.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .splash-enter { bottom: 10%; }
+    .splash-enter-icon { font-size: 1.6rem; }
+    .splash-enter-text { font-size: 0.75rem; }
+}
 /* ========== END INTRO SPLASH ========== */
 
 

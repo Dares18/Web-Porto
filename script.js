@@ -21,6 +21,10 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     function initAudio() {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Explicitly resume — inside a click handler this is guaranteed to work
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             sfxEnabled = true;
         } catch (e) {
             sfxEnabled = false;
@@ -221,9 +225,6 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     }
 
     async function animate() {
-        // Initialize audio context on first user-gesture-like timing
-        initAudio();
-
         // Hide all lines initially
         splash.querySelectorAll('.splash-line').forEach(l => {
             l.style.display = 'none';
@@ -279,13 +280,36 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         }
     }
 
-    // Start animation once fonts + icons are somewhat ready
+    // Wait for user click/tap to start animation (guarantees AudioContext unlock)
+    function waitForUserGesture() {
+        const enterPrompt = document.getElementById('splash-enter');
+
+        function onUserGesture() {
+            // Remove listener to prevent double-fires
+            splash.removeEventListener('click', onUserGesture);
+            splash.removeEventListener('touchstart', onUserGesture);
+
+            // Init audio inside user gesture — browser guarantees it will be "running"
+            initAudio();
+
+            // Hide the enter prompt
+            if (enterPrompt) enterPrompt.classList.add('hidden');
+
+            // Start animation after a tiny delay for prompt fade-out
+            setTimeout(animate, 200);
+        }
+
+        splash.addEventListener('click', onUserGesture);
+        splash.addEventListener('touchstart', onUserGesture, { passive: true });
+    }
+
+    // Start waiting for user gesture once fonts + icons are ready
     if (document.readyState === 'complete') {
-        animate();
+        waitForUserGesture();
     } else {
         window.addEventListener('load', () => {
             // Small extra delay so Phosphor Icons have rendered
-            setTimeout(animate, 150);
+            setTimeout(waitForUserGesture, 150);
         });
     }
 })();
