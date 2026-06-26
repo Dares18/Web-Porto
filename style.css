@@ -1026,9 +1026,9 @@ body.light-theme .project-summary {
     background: var(--card-bg-dark);
     border: 1px solid var(--dock-border-dark);
     border-radius: 2rem;
-    width: 100%;
-    max-width: 1000px;
-    max-height: calc(100vh - 4rem);
+    width: 96%;
+    max-width: 1350px;
+    max-height: calc(100vh - 2.5rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1128,8 +1128,8 @@ body.light-theme .modal-desc {
 
 .modal-gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 1.75rem;
 }
 
 .gallery-cell {
@@ -1452,12 +1452,12 @@ body.light-theme .dock-item::after {
 
 .lightbox-container {
     position: relative;
-    max-width: 90vw;
-    max-height: 85vh;
+    max-width: 96vw;
+    max-height: 95vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     transform: scale(0.85);
     transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1467,8 +1467,8 @@ body.light-theme .dock-item::after {
 }
 
 .lightbox-image {
-    max-width: 90vw;
-    max-height: 70vh;
+    max-width: 96vw;
+    max-height: 86vh;
     object-fit: contain;
     border-radius: 1rem;
     box-shadow: 0 30px 60px rgba(0,0,0,0.8);
