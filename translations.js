@@ -69,9 +69,7 @@ const exactMatchDict = {
     "Translate to Indonesia": "Terjemahkan ke Indonesia",
     "Translate to English": "Terjemahkan ke Inggris",
     "Zoom": "Perbesar",
-    "DESIGN DREAMER": "PEMIMPI DESAIN",
-    "FRONTEND DEVELOPER": "PENGEMBANG FRONTEND",
-    "BACKEND SURVIVOR": "SURVIVOR BACKEND",
+
 
     // SDM APU Captions
     "PIN-Based Login Portal — Secure appraisal gateway where every division head (evaluator) and HRD officer accesses the system using a distinct, unique PIN code.":
@@ -125,18 +123,8 @@ function applyPortfolioLanguage(lang) {
         }
     });
 
-    // 2. Marquee items
-    document.querySelectorAll('.marquee-content span:not(.dot)').forEach(el => {
-        const txt = el.getAttribute('data-en') || el.textContent.trim();
-        if (!el.hasAttribute('data-en')) el.setAttribute('data-en', txt);
-        if (lang === 'id' && exactMatchDict[txt]) {
-            el.textContent = exactMatchDict[txt];
-        } else if (lang === 'en') {
-            el.textContent = txt;
-        }
-    });
+    // 2. Zoom pills
 
-    // 3. Zoom pills
     document.querySelectorAll('.cell-zoom-pill').forEach(el => {
         el.innerHTML = lang === 'id' ? `<i class="ph ph-magnifying-glass-plus"></i> Perbesar` : `<i class="ph ph-magnifying-glass-plus"></i> Zoom`;
     });
