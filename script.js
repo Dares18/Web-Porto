@@ -107,15 +107,17 @@ const themeBtn = document.getElementById('theme-toggle');
 const themeIcon = themeBtn.querySelector('i');
 
 // Check local storage for theme preference
-const currentTheme = localStorage.getItem('theme') || 'dark';
+const currentTheme = localStorage.getItem('theme') || 'light';
 
-if (currentTheme === 'light') {
-    document.body.classList.remove('dark-theme');
-    document.body.classList.add('light-theme');
+if (currentTheme === 'dark') {
+    document.body.classList.remove('light-theme');
+    document.body.classList.add('dark-theme');
+    // Icon stays as ph-moon (default in HTML), correct for dark mode
+    if (themeBtn && themeBtn.parentElement) themeBtn.parentElement.setAttribute('data-tooltip', 'Light Mode');
+} else {
+    // Light mode is default — swap icon to ph-sun
     themeIcon.classList.replace('ph-moon', 'ph-sun');
     if (themeBtn && themeBtn.parentElement) themeBtn.parentElement.setAttribute('data-tooltip', 'Dark Mode');
-} else {
-    if (themeBtn && themeBtn.parentElement) themeBtn.parentElement.setAttribute('data-tooltip', 'Light Mode');
 }
 
 themeBtn.addEventListener('click', () => {
