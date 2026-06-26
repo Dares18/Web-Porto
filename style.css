@@ -1549,9 +1549,8 @@ body.light-theme .dock-item::after {
 
 .lightbox-container {
     position: relative;
-    width: 94vw;
-    height: 92vh;
-    max-width: 1800px;
+    max-width: 95vw;
+    max-height: 92vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1566,11 +1565,12 @@ body.light-theme .dock-item::after {
 }
 
 .lightbox-image {
-    width: 100%;
-    height: calc(100% - 90px);
-    max-width: none;
-    max-height: none;
+    max-width: 95vw;
+    max-height: 82vh;
+    width: auto;
+    height: auto;
     object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
     border-radius: 1rem;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
     user-select: none;
