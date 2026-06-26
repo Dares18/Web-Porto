@@ -1330,11 +1330,13 @@ body.light-theme .dock-item::after {
     }
     .dock {
         bottom: 1.25rem;
+        left: 50%;
+        transform: translate3d(-50%, 0, 0);
         padding: 0.35rem 0.5rem;
-        max-width: calc(100vw - 1.5rem);
+        width: max-content;
+        max-width: calc(100vw - 1.2rem);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        transform: translateZ(0);
     }
     .dock-list {
         gap: 0.25rem;
