@@ -55,27 +55,34 @@ document.querySelectorAll('.dock-link').forEach(link => {
 // Header Scroll Animation (Glides logo to top-left when scrolling)
 const header = document.querySelector('.header');
 if (header) {
+    let ticking = false;
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 40) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                if (window.scrollY > 40) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+                ticking = false;
+            });
+            ticking = true;
         }
-    });
+    }, { passive: true });
 }
 
-// Scroll animation for elements
+// Scroll animation for elements (Optimized for Mobile/High Refresh Rate GPUs)
 const observerOptions = {
     root: null,
-    rootMargin: '0px',
-    threshold: 0.1
+    rootMargin: '0px 0px 60px 0px',
+    threshold: 0.01
 };
 
 const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            entry.target.style.transform = 'translate3d(0, 0, 0)';
             observer.unobserve(entry.target);
         }
     });
@@ -83,8 +90,9 @@ const observer = new IntersectionObserver((entries, observer) => {
 
 document.querySelectorAll('.section-title, .about-text, .about-image-card, .education-card, .timeline-item, .project-card').forEach(el => {
     el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+    el.style.transform = 'translate3d(0, 24px, 0)';
+    el.style.willChange = 'opacity, transform';
+    el.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
     observer.observe(el);
 });
 
