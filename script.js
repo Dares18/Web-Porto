@@ -14,6 +14,197 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     // Utility: wait ms
     const wait = ms => new Promise(r => setTimeout(r, ms));
 
+    // ========== WEB AUDIO API — Futuristic SFX Engine ==========
+    let audioCtx = null;
+    let sfxEnabled = false;
+
+    function initAudio() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            sfxEnabled = true;
+        } catch (e) {
+            sfxEnabled = false;
+        }
+    }
+
+    // Create filtered white noise burst (used for whoosh/glitch textures)
+    function createNoiseBuffer(duration) {
+        if (!audioCtx) return null;
+        const sampleRate = audioCtx.sampleRate;
+        const length = sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, length, sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        return buffer;
+    }
+
+    // SFX: Deep resonant tone + shimmer — Logo Appear
+    function sfxLogoAppear() {
+        if (!sfxEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime;
+
+        // Sub bass tone
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(55, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.8);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.15, now + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.9);
+
+        // Shimmer harmonic
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(880, now);
+        osc2.frequency.exponentialRampToValueAtTime(440, now + 0.6);
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1200, now);
+        filter.Q.setValueAtTime(5, now);
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.04, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+        osc2.connect(filter).connect(gain2).connect(audioCtx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.7);
+    }
+
+    // SFX: Digital whoosh — Text lines appear
+    function sfxTextReveal(pitchOffset) {
+        if (!sfxEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime;
+        const basePitch = 300 + (pitchOffset || 0) * 80;
+
+        // Filtered noise whoosh
+        const noiseBuffer = createNoiseBuffer(0.35);
+        if (noiseBuffer) {
+            const noise = audioCtx.createBufferSource();
+            const noiseGain = audioCtx.createGain();
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noise.buffer = noiseBuffer;
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(basePitch, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(basePitch * 4, now + 0.15);
+            noiseFilter.frequency.exponentialRampToValueAtTime(basePitch * 0.5, now + 0.35);
+            noiseFilter.Q.setValueAtTime(2, now);
+            noiseGain.gain.setValueAtTime(0, now);
+            noiseGain.gain.linearRampToValueAtTime(0.07, now + 0.03);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            noise.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
+            noise.start(now);
+            noise.stop(now + 0.35);
+        }
+
+        // Quick tonal blip
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(basePitch * 2, now);
+        osc.frequency.exponentialRampToValueAtTime(basePitch, now + 0.12);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.05, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+    }
+
+    // SFX: Glitch burst — Marquee lines appear
+    function sfxMarqueeReveal(index) {
+        if (!sfxEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime;
+        const basePitch = 150 + index * 50;
+
+        // Distorted square wave burst
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const distortion = audioCtx.createWaveShaperFunction
+            ? audioCtx.createWaveShaper() : null;
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(basePitch, now);
+        osc.frequency.setValueAtTime(basePitch * 1.5, now + 0.04);
+        osc.frequency.setValueAtTime(basePitch * 0.8, now + 0.08);
+        osc.frequency.exponentialRampToValueAtTime(basePitch * 2, now + 0.18);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.04, now + 0.01);
+        gain.gain.setValueAtTime(0.03, now + 0.05);
+        gain.gain.linearRampToValueAtTime(0.05, now + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+
+        // Noise crackle overlay
+        const noiseBuffer = createNoiseBuffer(0.2);
+        if (noiseBuffer) {
+            const noise = audioCtx.createBufferSource();
+            const nGain = audioCtx.createGain();
+            const hpf = audioCtx.createBiquadFilter();
+            noise.buffer = noiseBuffer;
+            hpf.type = 'highpass';
+            hpf.frequency.setValueAtTime(3000, now);
+            nGain.gain.setValueAtTime(0, now);
+            nGain.gain.linearRampToValueAtTime(0.06, now + 0.02);
+            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            noise.connect(hpf).connect(nGain).connect(audioCtx.destination);
+            noise.start(now);
+            noise.stop(now + 0.2);
+        }
+    }
+
+    // SFX: Cinematic sweep — Curtain exit
+    function sfxCurtainExit() {
+        if (!sfxEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime;
+
+        // Rising sweep
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(80, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.6);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, now);
+        filter.frequency.exponentialRampToValueAtTime(4000, now + 0.5);
+        filter.frequency.exponentialRampToValueAtTime(200, now + 0.8);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.06, now + 0.1);
+        gain.gain.setValueAtTime(0.06, now + 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc.connect(filter).connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.8);
+
+        // Breath-like noise sweep
+        const noiseBuffer = createNoiseBuffer(0.7);
+        if (noiseBuffer) {
+            const noise = audioCtx.createBufferSource();
+            const nGain = audioCtx.createGain();
+            const bpf = audioCtx.createBiquadFilter();
+            noise.buffer = noiseBuffer;
+            bpf.type = 'bandpass';
+            bpf.frequency.setValueAtTime(500, now);
+            bpf.frequency.exponentialRampToValueAtTime(3000, now + 0.4);
+            bpf.frequency.exponentialRampToValueAtTime(300, now + 0.7);
+            bpf.Q.setValueAtTime(1, now);
+            nGain.gain.setValueAtTime(0, now);
+            nGain.gain.linearRampToValueAtTime(0.08, now + 0.15);
+            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+            noise.connect(bpf).connect(nGain).connect(audioCtx.destination);
+            noise.start(now);
+            noise.stop(now + 0.7);
+        }
+    }
+    // ========== END SFX ENGINE ==========
+
     // Utility: show a line with clip-path reveal
     function showLine(el) {
         el.classList.remove('fade-out');
@@ -30,6 +221,9 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     }
 
     async function animate() {
+        // Initialize audio context on first user-gesture-like timing
+        initAudio();
+
         // Hide all lines initially
         splash.querySelectorAll('.splash-line').forEach(l => {
             l.style.display = 'none';
@@ -39,6 +233,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         await wait(300);
         logo.style.display = '';
         showLine(logo);
+        sfxLogoAppear();
 
         // Phase 2: Spotlight text from About Me (cycle one at a time)
         await wait(800);
@@ -48,6 +243,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             if (i > 0) hideLine(textLines[i - 1]);
             await wait(i > 0 ? 300 : 0);
             showLine(textLines[i]);
+            sfxTextReveal(i);
             await wait(600);
         }
 
@@ -59,12 +255,14 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             if (i > 0) hideLine(marqueeLines[i - 1]);
             await wait(i > 0 ? 300 : 0);
             showLine(marqueeLines[i]);
+            sfxMarqueeReveal(i);
             await wait(550);
         }
 
         // Phase 4: Exit - fade everything, then curtain split
         await wait(300);
         splash.classList.add('exit');
+        sfxCurtainExit();
 
         // Wait for curtain animation to complete
         await wait(900);
@@ -72,6 +270,13 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         // Cleanup
         splash.classList.add('done');
         document.body.classList.remove('splash-active');
+
+        // Close audio context after splash is done
+        if (audioCtx && audioCtx.state !== 'closed') {
+            setTimeout(() => {
+                audioCtx.close().catch(() => {});
+            }, 1000);
+        }
     }
 
     // Start animation once fonts + icons are somewhat ready
