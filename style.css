@@ -1284,6 +1284,11 @@ body.light-theme .gallery-cell {
     transform: scale(1.1);
 }
 
+.lang-btn.active-lang {
+    color: var(--accent-color);
+}
+
+
 .dock-divider {
     width: 1px;
     height: 24px;

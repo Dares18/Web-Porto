@@ -23,7 +23,7 @@
     <meta property="twitter:description"
         content="Portfolio resmi Daffa Restu Fadhillah (Dares), Front-End Developer & UI/UX Designer. Jelajahi proyek, keahlian, dan pengalaman kerja saya.">
     <meta property="twitter:image" content="https://dares18.github.io/Web-Porto/Assets/test%20photo.jpeg">
-    <link rel="stylesheet" href="style.css?v=2.7">
+    <link rel="stylesheet" href="style.css?v=2.9">
     <!-- Google Fonts for modern typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&display=swap"
         rel="stylesheet">
@@ -82,8 +82,8 @@
         <section id="about" class="about-section">
             <div class="container about-grid">
                 <div class="about-content">
-                    <h2 class="section-title">About Me</h2>
-                    <p class="about-text">
+                    <h2 class="section-title" data-tr="sec-about">About Me</h2>
+                    <p class="about-text" data-tr="about-text">
                         Hi, I'm <span class="highlight">Daffa Restu Fadhillah</span>. A passionate tech enthusiast
                         mainly
                         focused on Front-End Development and UI/UX Design. I love building cool, responsive, and
@@ -96,7 +96,7 @@
                     <div class="about-image-card">
                         <img src="Assets/test photo.jpeg" alt="Daffa Restu Fadhillah" class="profile-img">
                         <div class="status-badge">
-                            <span class="status-dot"></span> Available for work
+                            <span class="status-dot"></span> <span data-tr="avail-work">Available for work</span>
                         </div>
                     </div>
                 </div>
@@ -106,7 +106,7 @@
         <!-- Education Section -->
         <section id="education" class="education-section">
             <div class="container">
-                <h2 class="section-title">Education</h2>
+                <h2 class="section-title" data-tr="sec-edu">Education</h2>
                 <div class="education-container">
                     <div class="education-card">
                         <div class="edu-header">
@@ -120,7 +120,7 @@
                         </div>
                         <h3 class="edu-univ">Dian Nuswantoro University</h3>
                         <h4 class="edu-major">Bachelor of Informatics Engineering (S1 Teknik Informatika)</h4>
-                        <p class="edu-desc">
+                        <p class="edu-desc" data-tr="edu-desc-1">
                             Studied core computer science principles, software engineering, algorithms, and computer
                             systems. Specialized independently and academically in <span class="edu-highlight">Front-End
                                 Development</span> and <span class="edu-highlight">UI/UX Design</span>, focusing on
@@ -141,7 +141,7 @@
         <!-- Work Experience Section -->
         <section id="experience" class="experience-section">
             <div class="container">
-                <h2 class="section-title">Work Experience</h2>
+                <h2 class="section-title" data-tr="sec-exp">Work Experience</h2>
                 <div class="timeline">
                     <!-- Item 1 -->
                     <div class="timeline-item">
@@ -155,12 +155,12 @@
                                 </div>
                                 <div class="exp-meta">
                                     <span class="exp-date"><i class="ph ph-calendar-blank"></i> 2023</span>
-                                    <span class="exp-badge internship">Internship</span>
+                                    <span class="exp-badge internship" data-tr="exp-badge-1">Internship</span>
                                 </div>
                             </div>
-                            <h3 class="exp-role">IT Help Desk Support</h3>
+                            <h3 class="exp-role" data-tr="exp-role-1">IT Help Desk Support</h3>
                             <h4 class="exp-company"><i class="ph ph-buildings"></i> BBPJN JATENG — DIY</h4>
-                            <p class="exp-desc">
+                            <p class="exp-desc" data-tr="exp-desc-1">
                                 Provided technical assistance and IT troubleshooting to internal and external staff.
                                 Resolved hardware, software, network infrastructure, and operating system issues to
                                 ensure seamless daily computer operations.
@@ -188,12 +188,12 @@
                                 <div class="exp-meta">
                                     <span class="exp-date"><i class="ph ph-calendar-blank"></i> Dec 2025 — Jun
                                         2026</span>
-                                    <span class="exp-badge">Contract</span>
+                                    <span class="exp-badge" data-tr="exp-badge-2">Contract</span>
                                 </div>
                             </div>
-                            <h3 class="exp-role">Study Program Administration Staff</h3>
+                            <h3 class="exp-role" data-tr="exp-role-2">Study Program Administration Staff</h3>
                             <h4 class="exp-company"><i class="ph ph-buildings"></i> Agung Putra University</h4>
-                            <p class="exp-desc">
+                            <p class="exp-desc" data-tr="exp-desc-2">
                                 Managed daily academic department administration including archiving and reporting.
                                 Coordinated agenda scheduling for faculty management, handled incoming/outgoing
                                 correspondence, and maintained database accuracy.
@@ -221,12 +221,12 @@
                                 <div class="exp-meta">
                                     <span class="exp-date"><i class="ph ph-calendar-blank"></i> Dec 2025 — Jun
                                         2026</span>
-                                    <span class="exp-badge">Contract</span>
+                                    <span class="exp-badge" data-tr="exp-badge-3">Contract</span>
                                 </div>
                             </div>
-                            <h3 class="exp-role">LPPM Administration Staff & Cooperation (National)</h3>
+                            <h3 class="exp-role" data-tr="exp-role-3">LPPM Administration Staff & Cooperation (National)</h3>
                             <h4 class="exp-company"><i class="ph ph-buildings"></i> Agung Putra University</h4>
-                            <p class="exp-desc">
+                            <p class="exp-desc" data-tr="exp-desc-3">
                                 Assisted daily institutional research administration, managed document archiving and
                                 report preparation, provided executive support to research committees, and handled
                                 official correspondence for national collaboration initiatives.
@@ -247,7 +247,7 @@
         <!-- Projects Section -->
         <section id="projects" class="projects-section">
             <div class="container">
-                <h2 class="section-title">Projects</h2>
+                <h2 class="section-title" data-tr="sec-proj">Projects</h2>
                 <div class="projects-grid">
                     <!-- Project 1: SDM APU -->
                     <div class="project-card liquid-project" id="project-sdm-apu">
@@ -255,7 +255,7 @@
                             <img src="Assets/ProjectSdmApu/1.png" alt="Employee Performance Appraisal System APU"
                                 class="project-img">
                             <div class="project-img-overlay">
-                                <span class="action-pill"><i class="ph ph-corners-out"></i> Open Gallery Grid (6
+                                <span class="action-pill" data-tr="pill-1"><i class="ph ph-corners-out"></i> Open Gallery Grid (6
                                     Images)</span>
                             </div>
                         </div>
@@ -264,8 +264,8 @@
                                 <span class="exp-tag">HR Management</span>
                                 <span class="exp-tag">Academic Admin</span>
                             </div>
-                            <h3 class="project-heading">Employee Performance Appraisal System</h3>
-                            <p class="project-summary">An integrated Human Resource Management System featuring digital
+                            <h3 class="project-heading" data-tr="proj-head-1">Employee Performance Appraisal System</h3>
+                            <p class="project-summary" data-tr="proj-sum-1">An integrated Human Resource Management System featuring digital
                                 document archiving, employee evaluation tracking, and academic administrative automation
                                 for Agung Putra University.</p>
                         </div>
@@ -277,7 +277,7 @@
                             <img src="Assets/ProjectLpmiApu/1A.png" alt="Internal Quality Assurance System APU"
                                 class="project-img">
                             <div class="project-img-overlay">
-                                <span class="action-pill"><i class="ph ph-corners-out"></i> Open Gallery Grid (8
+                                <span class="action-pill" data-tr="pill-2"><i class="ph ph-corners-out"></i> Open Gallery Grid (8
                                     Images)</span>
                             </div>
                         </div>
@@ -286,8 +286,8 @@
                                 <span class="exp-tag">Quality Assurance</span>
                                 <span class="exp-tag">Academic Survey</span>
                             </div>
-                            <h3 class="project-heading">Internal Quality Assurance Questionnaire System</h3>
-                            <p class="project-summary">An integrated academic survey and evaluation questionnaire
+                            <h3 class="project-heading" data-tr="proj-head-2">Internal Quality Assurance Questionnaire System</h3>
+                            <p class="project-summary" data-tr="proj-sum-2">An integrated academic survey and evaluation questionnaire
                                 platform designed for Agung Putra University's Internal Quality Assurance Board (LPMI),
                                 facilitating automated feedback collection, institutional auditing, and quality
                                 compliance tracking.</p>
@@ -302,15 +302,15 @@
             <div class="project-modal-glass">
                 <div class="project-modal-top">
                     <div class="modal-title-area">
-                        <span class="exp-badge"><i class="ph ph-images"></i> Documentation Gallery</span>
-                        <h3>Employee Performance Appraisal System</h3>
+                        <span class="exp-badge" data-tr="mod-badge-1"><i class="ph ph-images"></i> Documentation Gallery</span>
+                        <h3 data-tr="mod-head-1">Employee Performance Appraisal System</h3>
                     </div>
                     <button class="modal-close-btn close-gallery-modal" aria-label="Close Gallery">
                         <i class="ph ph-x"></i>
                     </button>
                 </div>
                 <div class="project-modal-content">
-                    <p class="modal-desc">Comprehensive interface preview and feature walkthrough of the Human Resource
+                    <p class="modal-desc" data-tr="mod-desc-1">Comprehensive interface preview and feature walkthrough of the Human Resource
                         Management and Employee Performance Appraisal System at Agung Putra University.</p>
                     <div class="modal-gallery-grid">
                         <div class="gallery-cell" data-index="0"
@@ -353,15 +353,15 @@
             <div class="project-modal-glass">
                 <div class="project-modal-top">
                     <div class="modal-title-area">
-                        <span class="exp-badge"><i class="ph ph-images"></i> Documentation Gallery</span>
-                        <h3>Internal Quality Assurance Questionnaire System</h3>
+                        <span class="exp-badge" data-tr="mod-badge-2"><i class="ph ph-images"></i> Documentation Gallery</span>
+                        <h3 data-tr="mod-head-2">Internal Quality Assurance Questionnaire System</h3>
                     </div>
                     <button class="modal-close-btn close-gallery-modal" aria-label="Close Gallery">
                         <i class="ph ph-x"></i>
                     </button>
                 </div>
                 <div class="project-modal-content">
-                    <p class="modal-desc">Comprehensive interface preview and feature walkthrough of the Internal
+                    <p class="modal-desc" data-tr="mod-desc-2">Comprehensive interface preview and feature walkthrough of the Internal
                         Quality Assurance Board (LPMI) Questionnaire and Evaluation Survey System at Agung Putra
                         University.</p>
                     <div class="modal-gallery-grid">
@@ -462,11 +462,15 @@
             <li class="dock-item" data-tooltip="Switch Theme">
                 <button id="theme-toggle" class="dock-link theme-btn"><i class="ph ph-moon"></i></button>
             </li>
+            <li class="dock-item" data-tooltip="Translate to Indonesia">
+                <button id="lang-toggle" class="dock-link lang-btn" aria-label="Switch Language"><i class="ph ph-translate"></i></button>
+            </li>
         </ul>
     </nav>
 
-    <script src="cv-data.js?v=2.7"></script>
-    <script src="script.js?v=2.7"></script>
+    <script src="cv-data.js?v=2.9"></script>
+    <script src="translations.js?v=2.9"></script>
+    <script src="script.js?v=2.9"></script>
 </body>
 
 </html>
