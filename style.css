@@ -8,7 +8,7 @@
     --dock-bg-light: rgba(255, 255, 255, 0.45);
     --dock-border-light: rgba(0, 0, 0, 0.12);
     --card-bg-light: rgba(255, 255, 255, 0.75);
-    
+
     /* Dark Theme Variables */
     --bg-color-dark: #050505;
     --bg-gradient-dark: radial-gradient(circle at top right, #1d1d1d, #050505);
@@ -35,7 +35,9 @@
     --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -43,11 +45,23 @@
     -webkit-touch-callout: none;
 }
 
-:focus, :active, :focus-visible {
+:focus,
+:active,
+:focus-visible {
     outline: none !important;
 }
 
-a, button, input, textarea, select, .card, .dock-link, .dock-item, .dock-link *, .project-card, .btn {
+a,
+button,
+input,
+textarea,
+select,
+.card,
+.dock-link,
+.dock-item,
+.dock-link *,
+.project-card,
+.btn {
     outline: none !important;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
     user-select: none;
@@ -77,71 +91,86 @@ body.light-theme {
     --accent-badge-bg: rgba(0, 0, 0, 0.06);
     --accent-gradient: linear-gradient(135deg, #111111 0%, #888888 100%);
 }
+
 body.light-theme .bg-grid {
-    background-image: 
+    background-image:
         linear-gradient(var(--grid-color-light) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-color-light) 1px, transparent 1px);
 }
+
 body.light-theme .dock {
     background: var(--dock-bg-light);
     border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: 
+    box-shadow:
         0 25px 50px -12px rgba(0, 0, 0, 0.18),
         0 0 25px rgba(0, 0, 0, 0.05),
         inset 0 1px 2px rgba(255, 255, 255, 0.95),
         inset 0 -1px 1px rgba(0, 0, 0, 0.05);
 }
+
 body.light-theme .dock-link {
     color: var(--text-color-light);
 }
+
 body.light-theme .project-card {
     background: var(--card-bg-light);
     border: 1px solid var(--dock-border-light);
 }
+
 body.light-theme .education-card {
     background: var(--card-bg-light);
     border: 1px solid var(--dock-border-light);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
+
 body.light-theme .edu-year {
     background: rgba(0, 0, 0, 0.06);
     color: var(--text-color-light);
     border-color: rgba(0, 0, 0, 0.1);
 }
+
 body.light-theme .edu-tag {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.08);
     color: var(--text-muted-light);
 }
+
 body.light-theme .edu-tag:hover {
     background: rgba(0, 0, 0, 0.08);
     color: var(--text-color-light);
 }
+
 body.light-theme .timeline {
     border-left-color: rgba(0, 0, 0, 0.1);
 }
+
 body.light-theme .timeline-dot {
     background: #ffffff;
     border-color: var(--accent-border);
     color: var(--accent-color);
     box-shadow: 0 0 15px var(--accent-glow);
 }
+
 body.light-theme .timeline-content {
     background: var(--card-bg-light);
     border: 1px solid var(--dock-border-light);
     box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
 }
+
 body.light-theme .exp-date {
     color: var(--text-muted-light);
 }
+
 body.light-theme .exp-role {
     color: var(--text-color-light);
 }
+
 body.light-theme .exp-tag {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.08);
     color: var(--text-muted-light);
 }
+
 body.light-theme .exp-tag:hover {
     background: rgba(0, 0, 0, 0.08);
     color: var(--text-color-light);
@@ -153,18 +182,22 @@ body.dark-theme {
     background-color: var(--bg-color-dark);
     color: var(--text-color-dark);
 }
+
 body.dark-theme .bg-grid {
-    background-image: 
+    background-image:
         linear-gradient(var(--grid-color-dark) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-color-dark) 1px, transparent 1px);
 }
+
 body.dark-theme .dock {
     background: var(--dock-bg-dark);
     border: 1px solid var(--dock-border-dark);
 }
+
 body.dark-theme .dock-link {
     color: var(--text-color-dark);
 }
+
 body.dark-theme .project-card {
     background: var(--card-bg-dark);
     border: 1px solid var(--dock-border-dark);
@@ -204,7 +237,7 @@ body.dark-theme .project-card {
     pointer-events: none;
 }
 
-.header > * {
+.header>* {
     pointer-events: auto;
 }
 
@@ -336,8 +369,13 @@ body.light-theme .logo h1 {
 }
 
 @keyframes scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 /* Scroll Indicator */
@@ -350,9 +388,22 @@ body.light-theme .logo h1 {
 }
 
 @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
 }
 
 /* --- Sections --- */
@@ -408,8 +459,15 @@ body.light-theme .logo h1 {
 }
 
 @keyframes pulse-glow {
-    0% { transform: scale(0.92); opacity: 0.25; }
-    100% { transform: scale(1.05); opacity: 0.5; }
+    0% {
+        transform: scale(0.92);
+        opacity: 0.25;
+    }
+
+    100% {
+        transform: scale(1.05);
+        opacity: 0.5;
+    }
 }
 
 .about-image-card {
@@ -487,8 +545,15 @@ body.light-theme .status-badge {
 }
 
 @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
 }
 
 /* --- Education Section --- */
@@ -581,7 +646,8 @@ body.light-theme .edu-icon-wrapper {
     flex-wrap: wrap;
 }
 
-.edu-year, .edu-gpa {
+.edu-year,
+.edu-gpa {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -857,7 +923,8 @@ body.light-theme .exp-icon-wrapper {
 }
 
 .projects-section {
-    padding: 4rem 0 10rem 0; /* extra padding bottom for dock */
+    padding: 4rem 0 10rem 0;
+    /* extra padding bottom for dock */
 }
 
 .projects-grid {
@@ -951,7 +1018,7 @@ body.light-theme .project-thumb-box {
     font-size: 0.82rem;
     font-weight: 600;
     color: #fff;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .placeholder-thumb {
@@ -1026,9 +1093,9 @@ body.light-theme .project-summary {
     background: var(--card-bg-dark);
     border: 1px solid var(--dock-border-dark);
     border-radius: 2rem;
-    width: 96%;
-    max-width: 1350px;
-    max-height: calc(100vh - 2.5rem);
+    width: 100%;
+    max-width: 1000px;
+    max-height: calc(100vh - 4rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1128,8 +1195,8 @@ body.light-theme .modal-desc {
 
 .modal-gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
 }
 
 .gallery-cell {
@@ -1139,14 +1206,14 @@ body.light-theme .modal-desc {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
     aspect-ratio: 16/10;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body.light-theme .gallery-cell {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
 }
 
 .gallery-cell:hover {
@@ -1174,7 +1241,7 @@ body.light-theme .gallery-cell {
     backdrop-filter: blur(30px) saturate(200%);
     -webkit-backdrop-filter: blur(30px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.22);
-    box-shadow: 
+    box-shadow:
         0 25px 50px -12px rgba(0, 0, 0, 0.75),
         0 0 25px rgba(255, 255, 255, 0.1),
         inset 0 1px 1px rgba(255, 255, 255, 0.45),
@@ -1266,27 +1333,33 @@ body.light-theme .dock-item::after {
 
 /* --- Responsiveness --- */
 @media (max-width: 768px) {
+
     /* Project Modal Mobile Polish */
     .project-modal-backdrop {
         padding: 1rem;
     }
+
     .project-modal-glass {
         border-radius: 1.5rem;
         max-height: calc(100vh - 2rem);
     }
+
     .project-modal-top {
         padding: 1.25rem 1.5rem;
         gap: 1rem;
         align-items: flex-start;
     }
+
     .modal-title-area h3 {
         font-size: 1.3rem;
         line-height: 1.3;
     }
+
     .project-modal-content {
         padding: 1.5rem;
         gap: 1.5rem;
     }
+
     .modal-gallery-grid {
         grid-template-columns: 1fr;
         gap: 1.25rem;
@@ -1295,39 +1368,49 @@ body.light-theme .dock-item::after {
     .dock-item::after {
         display: none !important;
     }
+
     .header {
         display: none !important;
     }
+
     .about-grid {
         grid-template-columns: 1fr;
         gap: 3rem;
     }
+
     .about-image-card {
         max-width: 300px;
     }
+
     .education-card {
         padding: 2rem 1.5rem;
         border-radius: 1.5rem;
     }
-    .edu-header, .exp-header {
+
+    .edu-header,
+    .exp-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
+
     .timeline {
         margin-left: 0.5rem;
         padding-left: 1.75rem;
     }
+
     .timeline-dot {
         left: calc(-1.75rem - 19px);
         width: 38px;
         height: 38px;
         font-size: 1.1rem;
     }
+
     .timeline-content {
         padding: 1.75rem 1.5rem;
         border-radius: 1.5rem;
     }
+
     .dock {
         bottom: 1.25rem;
         left: 50%;
@@ -1338,15 +1421,21 @@ body.light-theme .dock-item::after {
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
+
     .dock-list {
         gap: 0.25rem;
     }
+
     .dock-link {
         width: 36px;
         height: 36px;
         font-size: 1.15rem;
     }
-    .dock-link:active, .btn:active, .theme-toggle:active, .project-card:active {
+
+    .dock-link:active,
+    .btn:active,
+    .theme-toggle:active,
+    .project-card:active {
         transform: scale(0.92);
         opacity: 0.85;
     }
@@ -1356,7 +1445,11 @@ body.light-theme .dock-item::after {
         filter: blur(25px);
         will-change: transform, opacity;
     }
-    .education-card, .timeline-item, .project-card, .about-image-card {
+
+    .education-card,
+    .timeline-item,
+    .project-card,
+    .about-image-card {
         will-change: transform, opacity;
         transform: translateZ(0);
         backface-visibility: hidden;
@@ -1369,9 +1462,11 @@ body.light-theme .dock-item::after {
         padding: 0.3rem 0.4rem;
         max-width: calc(100vw - 1rem);
     }
+
     .dock-list {
         gap: 0.15rem;
     }
+
     .dock-link {
         width: 32px;
         height: 32px;
@@ -1383,9 +1478,11 @@ body.light-theme .dock-item::after {
     .dock {
         padding: 0.25rem 0.35rem;
     }
+
     .dock-list {
         gap: 0.1rem;
     }
+
     .dock-link {
         width: 28px;
         height: 28px;
@@ -1452,12 +1549,12 @@ body.light-theme .dock-item::after {
 
 .lightbox-container {
     position: relative;
-    max-width: 96vw;
-    max-height: 95vh;
+    max-width: 90vw;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
     transform: scale(0.85);
     transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1467,11 +1564,11 @@ body.light-theme .dock-item::after {
 }
 
 .lightbox-image {
-    max-width: 96vw;
-    max-height: 86vh;
+    max-width: 90vw;
+    max-height: 70vh;
     object-fit: contain;
     border-radius: 1rem;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
     user-select: none;
 }
 
@@ -1486,7 +1583,7 @@ body.light-theme .dock-item::after {
     align-items: center;
     gap: 1.25rem;
     max-width: 800px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
 body.light-theme .lightbox-caption-glass {
@@ -1590,32 +1687,41 @@ body.light-theme .lightbox-desc-text {
         height: 44px;
         font-size: 1.25rem;
     }
+
     .close-lightbox {
         top: 1rem;
         right: 1rem;
     }
+
     .prev-lightbox {
         left: 0.75rem;
     }
+
     .next-lightbox {
         right: 0.75rem;
     }
+
     /* Disable sticky hover on mobile touch */
     .lightbox-btn:hover {
         background: rgba(255, 255, 255, 0.12);
         color: #fff;
         transform: none;
     }
-    .prev-lightbox:hover, .next-lightbox:hover {
+
+    .prev-lightbox:hover,
+    .next-lightbox:hover {
         transform: translateY(-50%);
     }
+
     /* Tactile active touch feedback */
     .lightbox-btn:active {
         background: #fff !important;
         color: #000 !important;
         transform: scale(0.85) !important;
     }
-    .prev-lightbox:active, .next-lightbox:active {
+
+    .prev-lightbox:active,
+    .next-lightbox:active {
         transform: translateY(-50%) scale(0.85) !important;
     }
 
@@ -1627,6 +1733,7 @@ body.light-theme .lightbox-desc-text {
         text-align: center;
         max-width: calc(100vw - 2rem);
     }
+
     .lightbox-image {
         max-height: 60vh;
     }
