@@ -1093,9 +1093,9 @@ body.light-theme .project-summary {
     background: var(--card-bg-dark);
     border: 1px solid var(--dock-border-dark);
     border-radius: 2rem;
-    width: 96%;
-    max-width: 1350px;
-    max-height: calc(100vh - 2.5rem);
+    width: 95%;
+    max-width: 1380px;
+    max-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1195,7 +1195,7 @@ body.light-theme .modal-desc {
 
 .modal-gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 1.75rem;
 }
 
@@ -1549,12 +1549,14 @@ body.light-theme .dock-item::after {
 
 .lightbox-container {
     position: relative;
-    max-width: 96vw;
-    max-height: 95vh;
+    width: 94vw;
+    height: 92vh;
+    max-width: 1800px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    justify-content: center;
+    gap: 1.25rem;
     transform: scale(0.85);
     transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1564,8 +1566,10 @@ body.light-theme .dock-item::after {
 }
 
 .lightbox-image {
-    max-width: 96vw;
-    max-height: 86vh;
+    width: 100%;
+    height: calc(100% - 90px);
+    max-width: none;
+    max-height: none;
     object-fit: contain;
     border-radius: 1rem;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
@@ -1725,16 +1729,15 @@ body.light-theme .lightbox-desc-text {
         transform: translateY(-50%) scale(0.85) !important;
     }
 
-    .lightbox-caption-glass {
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 1rem 1.25rem;
-        border-radius: 1.5rem;
-        text-align: center;
-        max-width: calc(100vw - 2rem);
+    .lightbox-container {
+        width: 100vw;
+        height: 100vh;
+        padding: 1rem;
     }
 
     .lightbox-image {
-        max-height: 60vh;
+        width: 100%;
+        height: auto;
+        max-height: 62vh;
     }
 }
