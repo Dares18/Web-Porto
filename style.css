@@ -99,131 +99,156 @@ body:not(.splash-active) .dock {
     transform: translateY(100%);
 }
 
-/* Center container */
-.splash-center {
+/* Center container for kinetic typography */
+.kinetic-container {
     position: relative;
     z-index: 2;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0 5vw;
+    box-sizing: border-box;
 }
 
-/* Each animated line */
-.splash-line {
+/* Base kinetic word style */
+.kinetic-word {
+    position: absolute;
     opacity: 0;
-    transform: translateY(24px);
-    clip-path: inset(100% 0 0 0);
-    transition: none;
+    pointer-events: none;
     text-align: center;
-    font-family: var(--font-display);
-    color: #ffffff;
-    will-change: opacity, transform, clip-path;
-}
-
-.splash-line.visible {
-    opacity: 1;
-    transform: translateY(0);
-    clip-path: inset(0 0 0 0);
-    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        clip-path 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.splash-line.fade-out {
-    opacity: 0;
-    transform: translateY(-12px);
-    transition: opacity 0.3s ease-in, transform 0.3s ease-in;
-}
-
-/* Logo infinity */
-.splash-logo {
-    font-size: 4rem;
-    margin-bottom: 1.2rem;
-}
-
-.splash-logo i {
-    display: inline-block;
-    animation: none;
-}
-
-.splash-logo.visible i {
-    animation: splashPulseGlow 1.8s ease-in-out infinite;
-}
-
-@keyframes splashPulseGlow {
-
-    0%,
-    100% {
-        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-    }
-
-    50% {
-        filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.7)) drop-shadow(0 0 48px rgba(255, 255, 255, 0.3));
-    }
-}
-
-/* Spotlight text (About Me) */
-.splash-text {
-    font-size: 2.4rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
-}
-
-/* Marquee text (bigger, bolder, uppercase) */
-.splash-marquee {
-    font-size: 3.2rem;
+    font-family: var(--font-display), 'Outfit', sans-serif;
+    font-size: clamp(2.2rem, 7.5vw, 6.5rem);
     font-weight: 800;
-    letter-spacing: 0.08em;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    line-height: 1.2;
-    background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
+    will-change: transform, opacity, filter;
+    transition: none;
 }
 
-/* Exit: fade out the center text container */
-.intro-splash.exit .splash-center {
-    opacity: 0;
-    transform: scale(0.92);
-    transition: opacity 0.4s ease-in, transform 0.4s ease-in;
+.kinetic-word.kinetic-huge {
+    font-size: clamp(1.8rem, 8.5vw, 7.5rem);
+    letter-spacing: -0.04em;
+    width: 100%;
+}
+
+.kinetic-word.kinetic-accent {
+    font-size: clamp(2.8rem, 10vw, 8.5rem);
+    background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.kinetic-word.kinetic-welcome {
+    font-size: clamp(3.2rem, 11vw, 9.5rem);
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    text-shadow: 0 0 35px rgba(255, 255, 255, 0.5);
+}
+
+/* High-contrast inverted flash style on curtain and body */
+.intro-splash.kinetic-inverted .splash-layer {
+    background: #ffffff !important;
+}
+.intro-splash.kinetic-inverted .kinetic-word {
+    color: #050505 !important;
+    -webkit-text-fill-color: #050505 !important;
+}
+
+/* Kinetic Animations Active State */
+.kinetic-word.k-active {
+    opacity: 1;
+}
+
+/* 1. Stomp animation (Nail down) */
+.kinetic-word[data-anim="stomp"].k-active {
+    animation: kStomp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kStomp {
+    0% { transform: scale(3.5); opacity: 0; filter: blur(8px); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+}
+
+/* 2. Slide Left */
+.kinetic-word[data-anim="slide-l"].k-active {
+    animation: kSlideL 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kSlideL {
+    0% { transform: translateX(-80vw) skewX(-20deg); opacity: 0; }
+    100% { transform: translateX(0) skewX(0deg); opacity: 1; }
+}
+
+/* 3. Slide Right */
+.kinetic-word[data-anim="slide-r"].k-active {
+    animation: kSlideR 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kSlideR {
+    0% { transform: translateX(80vw) skewX(20deg); opacity: 0; }
+    100% { transform: translateX(0) skewX(0deg); opacity: 1; }
+}
+
+/* 4. Zoom explosion */
+.kinetic-word[data-anim="zoom"].k-active {
+    animation: kZoom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kZoom {
+    0% { transform: scale(0.1); opacity: 0; filter: blur(10px); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+}
+
+/* 5. Invert Flash Impact */
+.kinetic-word[data-anim="invert"].k-active {
+    animation: kInvert 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kInvert {
+    0% { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* 6. Elastic Stretch */
+.kinetic-word[data-anim="stretch"].k-active {
+    animation: kStretch 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes kStretch {
+    0% { transform: scaleX(3) scaleY(0.3); opacity: 0; }
+    100% { transform: scaleX(1) scaleY(1); opacity: 1; }
+}
+
+/* 7. Horizontal Bounce */
+.kinetic-word[data-anim="bounce"].k-active {
+    animation: kBounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes kBounce {
+    0% { transform: translateX(-30vw); opacity: 0; }
+    60% { transform: translateX(3vw); }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+/* 8. Mega Welcome Shockwave */
+.kinetic-word[data-anim="mega"].k-active {
+    animation: kMega 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes kMega {
+    0% { transform: scale(4); opacity: 0; filter: blur(12px); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+}
+
+/* Exit out transitions */
+.kinetic-word.k-out {
+    opacity: 0 !important;
+    transform: scale(0.85) !important;
+    filter: blur(4px) !important;
+    transition: opacity 0.12s ease-out, transform 0.12s ease-out, filter 0.12s ease-out !important;
 }
 
 /* Remove splash after animation */
 .intro-splash.done {
     display: none;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .splash-logo {
-        font-size: 3rem;
-    }
-
-    .splash-text {
-        font-size: 1.6rem;
-    }
-
-    .splash-marquee {
-        font-size: 2rem;
-        letter-spacing: 0.04em;
-    }
-}
-
-@media (max-width: 480px) {
-    .splash-logo {
-        font-size: 2.5rem;
-    }
-
-    .splash-text {
-        font-size: 1.3rem;
-    }
-
-    .splash-marquee {
-        font-size: 1.5rem;
-    }
 }
 
 /* Interactive enter prompt — centered ring */
