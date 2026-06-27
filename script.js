@@ -390,6 +390,194 @@ if (header) {
     }, { passive: true });
 }
 
+// ========== FIDGET SPINNER — Infinity Logo Physics Engine ==========
+(function initFidgetSpinner() {
+    const logoContainer = document.querySelector('.logo');
+    const logoGlass = document.querySelector('.logo-glass');
+    if (!logoContainer || !logoGlass) return;
+    const iconEl = logoGlass.querySelector('i');
+    if (!iconEl) return;
+
+    // Physics state
+    let angle = 0;           // Current rotation angle in degrees
+    let velocity = 0;        // Angular velocity in degrees/frame (~60fps)
+    let isSpinning = false;  // Is the animation loop running?
+    const friction = 0.985;  // Deceleration factor per frame (closer to 1 = longer spin)
+    const minVelocity = 0.15; // Stop threshold
+    const baseSpinForce = 25; // Base degrees/frame impulse per click
+    const maxVelocity = 120;  // Cap to prevent insane speeds
+
+    // Particle system for sparks
+    function emitSparks(count) {
+        const rect = logoGlass.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const radius = Math.max(rect.width, rect.height) / 2;
+
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('div');
+            spark.className = 'fidget-spark';
+
+            // Random angle direction for particle
+            const sparkAngle = Math.random() * Math.PI * 2;
+            const distance = radius + 10 + Math.random() * 40;
+            const x = cx + Math.cos(sparkAngle) * radius;
+            const y = cy + Math.sin(sparkAngle) * radius;
+            const tx = Math.cos(sparkAngle) * distance;
+            const ty = Math.sin(sparkAngle) * distance;
+            const size = 2 + Math.random() * 4;
+
+            spark.style.cssText = `
+                position: fixed;
+                left: ${x}px;
+                top: ${y}px;
+                width: ${size}px;
+                height: ${size}px;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 10001;
+                background: var(--accent-color, #00e0ff);
+                box-shadow: 0 0 6px var(--accent-glow, #00e0ff88);
+                opacity: 1;
+                transition: all ${0.4 + Math.random() * 0.5}s cubic-bezier(0.16, 1, 0.3, 1);
+            `;
+
+            document.body.appendChild(spark);
+
+            // Trigger animation next frame
+            requestAnimationFrame(() => {
+                spark.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+                spark.style.opacity = '0';
+            });
+
+            // Cleanup
+            setTimeout(() => spark.remove(), 1000);
+        }
+    }
+
+    // Sound effect for spin
+    function sfxSpin(force) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const now = ctx.currentTime;
+
+            // Whoosh oscillator
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(200 + force * 10, now);
+            osc.frequency.exponentialRampToValueAtTime(800 + force * 20, now + 0.1);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(600, now);
+            filter.Q.setValueAtTime(3, now);
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.06, now + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+            osc.connect(filter).connect(gain).connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.4);
+
+            // Click/mechanical sound
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(1200, now);
+            osc2.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+            gain2.gain.setValueAtTime(0.08, now);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc2.connect(gain2).connect(ctx.destination);
+            osc2.start(now);
+            osc2.stop(now + 0.08);
+
+            setTimeout(() => ctx.close().catch(() => {}), 500);
+        } catch (e) { /* Audio not available, silently continue */ }
+    }
+
+    // Main animation loop
+    function spinLoop() {
+        if (!isSpinning) return;
+
+        // Apply friction
+        velocity *= friction;
+
+        // Higher friction at very low speeds for natural stop
+        if (Math.abs(velocity) < 5) {
+            velocity *= 0.97;
+        }
+
+        // Update angle
+        angle += velocity;
+        angle %= 360;
+
+        // Apply rotation transform
+        iconEl.style.transform = `rotate(${angle}deg)`;
+
+        // Dynamic glow intensity based on speed
+        const speedRatio = Math.min(Math.abs(velocity) / 60, 1);
+        const glowSize = 15 + speedRatio * 35;
+        logoGlass.style.filter = `drop-shadow(0 0 ${glowSize}px var(--accent-glow))`;
+
+        // Check if we should stop
+        if (Math.abs(velocity) < minVelocity) {
+            velocity = 0;
+            isSpinning = false;
+            logoGlass.classList.remove('spinning');
+            // Smoothly return glow to default
+            logoGlass.style.filter = '';
+            return;
+        }
+
+        requestAnimationFrame(spinLoop);
+    }
+
+    // Click/Touch handler — flick the spinner
+    function onFlick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Random direction for fun, but if already spinning, keep direction
+        let direction;
+        if (Math.abs(velocity) > 1) {
+            direction = velocity > 0 ? 1 : -1;
+        } else {
+            direction = Math.random() > 0.5 ? 1 : -1;
+        }
+
+        // Add force — randomized for natural feel
+        const force = baseSpinForce + Math.random() * 20;
+        velocity += direction * force;
+
+        // Clamp velocity
+        if (velocity > maxVelocity) velocity = maxVelocity;
+        if (velocity < -maxVelocity) velocity = -maxVelocity;
+
+        // Emit sparks proportional to force
+        const sparkCount = Math.floor(6 + Math.abs(velocity) / 8);
+        emitSparks(sparkCount);
+
+        // Play sound
+        sfxSpin(Math.abs(velocity));
+
+        // Start loop if not already running
+        logoGlass.classList.add('spinning');
+        if (!isSpinning) {
+            isSpinning = true;
+            requestAnimationFrame(spinLoop);
+        }
+    }
+
+    // Bind events to logo container
+    logoContainer.addEventListener('click', onFlick);
+    logoContainer.addEventListener('touchstart', onFlick, { passive: false });
+})();
+// ========== END FIDGET SPINNER ==========
+
 // Scroll animation for elements (Optimized for Mobile/High Refresh Rate GPUs)
 const observerOptions = {
     root: null,
