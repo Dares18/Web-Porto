@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1672673947 source:d:\kuliah\semester 5\game programming\uas\dynastyofwar1.1\main.cpp
+	<iostream>
+	<vector>
+	<ctime>
+	<string>
+
+1672734725 source:d:\kuliah\semester 5\game programming\dynastyofwar1.1\main.cpp
+	<iostream>
+	<vector>
+	<ctime>
+	<string>
+

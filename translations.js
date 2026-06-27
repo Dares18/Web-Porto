@@ -57,6 +57,18 @@ const htmlTranslations = {
     "mod-desc-2": {
         en: "Comprehensive interface preview and feature walkthrough of the Internal Quality Assurance Board (LPMI) Questionnaire and Evaluation Survey System at Agung Putra University.",
         id: "Pratinjau antarmuka komprehensif dan penjelasan fitur dari Sistem Survei Kuesioner dan Evaluasi Lembaga Penjaminan Mutu Internal (LPMI) di Universitas Agung Putra."
+    },
+    "pill-3": { en: `<i class="ph ph-corners-out"></i> Open Gallery Grid (4 Images)`, id: `<i class="ph ph-corners-out"></i> Buka Galeri Grid (4 Gambar)` },
+    "proj-head-3": { en: "Dynasty of War — Tactical Turn-Based RPG", id: "Dynasty of War — Game RPG Strategi Turn-Based" },
+    "proj-sum-3": {
+        en: "A tactical turn-based RPG console game engineered in C++ utilizing Object-Oriented Programming (OOP). Features dynamic combat mechanics, character class specialization, and randomized attribute boosters.",
+        id: "Game RPG strategi turn-based berbasis konsol yang dikembangkan menggunakan C++ dan Pemrograman Berorientasi Objek (OOP). Menampilkan mekanik pertarungan dinamis, spesialisasi kelas karakter, dan sistem peningkatan atribut acak."
+    },
+    "mod-badge-3": { en: `<i class="ph ph-images"></i> Documentation Gallery`, id: `<i class="ph ph-images"></i> Galeri Dokumentasi` },
+    "mod-head-3": { en: "Dynasty of War — Tactical Turn-Based RPG", id: "Dynasty of War — Game RPG Strategi Turn-Based" },
+    "mod-desc-3": {
+        en: "Comprehensive gameplay and design concept walkthrough of Dynasty of War, a terminal-based strategy game built with C++ and object-oriented principles.",
+        id: "Penjelasan mendalam tentang konsep desain dan alur permainan Dynasty of War, sebuah game strategi berbasis terminal yang dibangun dengan C++ dan prinsip berorientasi objek."
     }
 };
 
@@ -104,7 +116,17 @@ const exactMatchDict = {
     "Quality Assurance Report Generator — Automated compiling tool producing formal LPMI evaluation summaries and accreditation compliance documents directly from survey datasets.":
     "Generator Laporan Penjaminan Mutu — Alat penyusunan otomatis yang menghasilkan ringkasan evaluasi resmi LPMI dan dokumen kepatuhan akreditasi langsung dari kumpulan data survei.",
     "Questionnaire Campaign Management — Administrative panel allowing LPMI staff to create new survey periods, customize question banks, and set target respondent criteria.":
-    "Manajemen Kampanye Kuesioner — Panel administratif yang memungkinkan staf LPMI membuat periode survei baru, menyesuaikan bank soal, dan menentukan kriteria target responden."
+    "Manajemen Kampanye Kuesioner — Panel administratif yang memungkinkan staf LPMI membuat periode survei baru, menyesuaikan bank soal, dan menentukan kriteria target responden.",
+
+    // Dynasty of War Captions
+    "Title Banner & Concept Artwork — Cinematic fantasy illustration embodying the dark tactical atmosphere of Dynasty of War, featuring the game's core warrior classes.":
+    "Spanduk Judul & Ilustrasi Konsep — Ilustrasi fantasi sinematik yang mewakili atmosfer taktis bernuansa gelap dari Dynasty of War, menampilkan kelas prajurit utama game.",
+    "Character Class Selection Screen — Concept UI showcasing the 4 distinct playable classes: Ogre, Knight, Mage, and Swordsman, each engineered with unique base HP, Attack, and Defense stats.":
+    "Layar Pemilihan Kelas Karakter — UI Konsep yang menampilkan 4 kelas yang dapat dimainkan: Ogre, Knight, Mage, dan Swordsman, masing-masing dirancang dengan statistik HP, Serangan, dan Pertahanan unik.",
+    "Turn-Based Combat Command HUD — Action menu interface where players execute strategic moves against enemy AI, choosing between Attack, Attack Up (+1 to +3), Defense Up, or Heal.":
+    "HUD Komando Pertarungan Turn-Based — Antarmuka menu aksi di mana pemain mengeksekusi langkah strategis melawan AI musuh, memilih antara Serang, Peningkatan Serangan (+1 hingga +3), Peningkatan Pertahanan, atau Sembuhkan.",
+    "C++ Terminal & Core Engine Execution — View of the backend C++ source code structure and real-time command-line battle execution console utilizing Object-Oriented architecture.":
+    "Terminal C++ & Eksekusi Mesin Utama — Tampilan struktur kode sumber C++ dan konsol eksekusi pertarungan baris perintah secara real-time yang menggunakan arsitektur Berorientasi Objek."
 };
 
 let currentAppLang = localStorage.getItem('porto_lang') || 'en';

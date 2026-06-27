@@ -655,6 +655,9 @@ const modalSdm = document.getElementById('modal-sdm-apu');
 const projectCardLpmi = document.getElementById('project-lpmi-apu');
 const modalLpmi = document.getElementById('modal-lpmi-apu');
 
+const projectCardDynasty = document.getElementById('project-dynasty-war');
+const modalDynasty = document.getElementById('modal-dynasty-war');
+
 const allGalleryModals = document.querySelectorAll('.gallery-modal');
 const allCloseModalBtns = document.querySelectorAll('.close-gallery-modal');
 
@@ -699,6 +702,18 @@ if (projectCardLpmi && modalLpmi) {
     };
     attachLpmiClick(projectCardLpmi);
     projectCardLpmi.querySelectorAll('.action-pill, .project-thumb-box, .project-img-overlay, .project-heading').forEach(attachLpmiClick);
+}
+
+if (projectCardDynasty && modalDynasty) {
+    const attachDynastyClick = (el) => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openGalleryModal(modalDynasty);
+        });
+    };
+    attachDynastyClick(projectCardDynasty);
+    projectCardDynasty.querySelectorAll('.action-pill, .project-thumb-box, .project-img-overlay, .project-heading').forEach(attachDynastyClick);
 }
 
 allCloseModalBtns.forEach(btn => {
