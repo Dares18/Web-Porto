@@ -69,7 +69,11 @@ const htmlTranslations = {
     "mod-desc-3": {
         en: "Comprehensive gameplay and design concept walkthrough of Dynasty of War, a terminal-based strategy game built with C++ and object-oriented principles.",
         id: "Penjelasan mendalam tentang konsep desain dan alur permainan Dynasty of War, sebuah game strategi berbasis terminal yang dibangun dengan C++ dan prinsip berorientasi objek."
-    }
+    },
+    "play-btn-text": { en: "Play Game Simulator", id: "Mainkan Game Simulator" },
+    "select-hero": { en: "Select Your Warrior Class", id: "Pilih Kelas Karaktermu" },
+    "select-sub": { en: "Choose your hero to enter the turn-based tactical arena against the computer AI.", id: "Pilih pahlawanmu untuk memasuki arena pertarungan strategi melawan AI komputer." },
+    "choose-action": { en: "CHOOSE YOUR TACTICAL MOVE:", id: "PILIH LANGKAH STRATEGISMU:" }
 };
 
 const exactMatchDict = {

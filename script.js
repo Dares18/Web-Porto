@@ -707,6 +707,7 @@ if (projectCardLpmi && modalLpmi) {
 if (projectCardDynasty && modalDynasty) {
     const attachDynastyClick = (el) => {
         el.addEventListener('click', (e) => {
+            if (e.target.closest('.play-game-launcher')) return;
             e.preventDefault();
             e.stopPropagation();
             openGalleryModal(modalDynasty);
@@ -862,4 +863,282 @@ if (fsBtn) {
     document.addEventListener('fullscreenchange', updateFullscreenIcon);
     document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
     document.addEventListener('msfullscreenchange', updateFullscreenIcon);
+}
+
+// --- Dynasty of War C++ Engine Web Simulator ---
+const modalSimulator = document.getElementById('modal-dynasty-simulator');
+const closeGameBtns = document.querySelectorAll('.close-game-modal');
+
+let dynastyGameState = {
+    player: { class: 'Knight', hp: 10, maxHp: 10, atk: 3, def: 2 },
+    comp: { class: 'Ogre', hp: 10, maxHp: 10, atk: 3, def: 2 },
+    isOver: false
+};
+
+function showDynastyScreen(screenId) {
+    if (!modalSimulator) return;
+    modalSimulator.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
+}
+
+function dynastyLog(text, type = 'sys') {
+    const logBox = document.getElementById('game-terminal-log');
+    if (!logBox) return;
+    const line = document.createElement('div');
+    line.className = `log-line ${type}`;
+    line.textContent = text;
+    logBox.appendChild(line);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+function updateDynastyHUD() {
+    const pName = document.getElementById('hud-player-name');
+    const pHpText = document.getElementById('hud-player-hp-text');
+    const pAtk = document.getElementById('hud-player-atk');
+    const pDef = document.getElementById('hud-player-def');
+    const pHpBar = document.getElementById('hud-player-hp-bar');
+
+    if (pName) pName.textContent = `Player (${dynastyGameState.player.class})`;
+    if (pHpText) pHpText.textContent = `${Math.max(0, dynastyGameState.player.hp)} / ${dynastyGameState.player.maxHp}`;
+    if (pAtk) pAtk.textContent = dynastyGameState.player.atk;
+    if (pDef) pDef.textContent = dynastyGameState.player.def;
+    if (pHpBar) {
+        const pPct = Math.max(0, Math.min(100, (dynastyGameState.player.hp / dynastyGameState.player.maxHp) * 100));
+        pHpBar.style.width = `${pPct}%`;
+    }
+
+    const cName = document.getElementById('hud-comp-name');
+    const cHpText = document.getElementById('hud-comp-hp-text');
+    const cAtk = document.getElementById('hud-comp-atk');
+    const cDef = document.getElementById('hud-comp-def');
+    const cHpBar = document.getElementById('hud-comp-hp-bar');
+
+    if (cName) cName.textContent = `Computer (${dynastyGameState.comp.class})`;
+    if (cHpText) cHpText.textContent = `${Math.max(0, dynastyGameState.comp.hp)} / ${dynastyGameState.comp.maxHp}`;
+    if (cAtk) cAtk.textContent = dynastyGameState.comp.atk;
+    if (cDef) cDef.textContent = dynastyGameState.comp.def;
+    if (cHpBar) {
+        const cPct = Math.max(0, Math.min(100, (dynastyGameState.comp.hp / dynastyGameState.comp.maxHp) * 100));
+        cHpBar.style.width = `${cPct}%`;
+    }
+}
+
+function resetDynastySimulator() {
+    dynastyGameState.isOver = false;
+    showDynastyScreen('game-screen-select');
+}
+
+// Attach Launcher Buttons
+document.querySelectorAll('.play-game-launcher').forEach(launcher => {
+    launcher.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof closeAllGalleryModals === 'function') closeAllGalleryModals();
+        if (modalSimulator) {
+            modalSimulator.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            resetDynastySimulator();
+        }
+    });
+});
+
+if (modalSimulator) {
+    modalSimulator.addEventListener('click', (e) => {
+        if (e.target === modalSimulator) {
+            modalSimulator.classList.remove('active');
+            const modDynasty = document.getElementById('modal-dynasty-war');
+            if (modDynasty && typeof openGalleryModal === 'function') openGalleryModal(modDynasty);
+        }
+    });
+
+    closeGameBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            modalSimulator.classList.remove('active');
+            const modDynasty = document.getElementById('modal-dynasty-war');
+            if (modDynasty && typeof openGalleryModal === 'function') openGalleryModal(modDynasty);
+        });
+    });
+}
+
+// Attach Class Selection
+document.querySelectorAll('#modal-dynasty-simulator .class-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const selectedClass = card.getAttribute('data-class');
+        const classes = ['Ogre', 'Knight', 'Mage', 'Swordsman'];
+        const remaining = classes.filter(c => c !== selectedClass);
+        const compClass = remaining[Math.floor(Math.random() * remaining.length)];
+
+        dynastyGameState.player = { class: selectedClass, hp: 10, maxHp: 10, atk: 3, def: 2 };
+        dynastyGameState.comp = { class: compClass, hp: 10, maxHp: 10, atk: 3, def: 2 };
+
+        const logBox = document.getElementById('game-terminal-log');
+        if (logBox) logBox.innerHTML = '';
+
+        dynastyLog(`[SYSTEM] Match Started: You (${selectedClass}) VS Computer (${compClass})`, 'sys');
+        dynastyLog(`[SYSTEM] Both fighters initialized: 10 HP, 3 ATK, 2 DEF.`, 'sys');
+
+        updateDynastyHUD();
+        showDynastyScreen('game-screen-battle');
+    });
+});
+
+// Execute Combat Turn (reproducing exact main.cpp logic)
+function executeDynastyTurn(pAction, cAction) {
+    const actionNames = { 1: "Serang (Attack)", 2: "Defend", 3: "Attack Up", 4: "Defense Up", 5: "Heal" };
+    dynastyLog(`-----------------------------------------`, 'sys');
+    dynastyLog(`[YOU] chose: ${actionNames[pAction]}`, 'player');
+    dynastyLog(`[COMP] chose: ${actionNames[cAction]}`, 'comp');
+
+    const doPlayerAtkUp = () => {
+        const rand = Math.floor(Math.random() * 3) + 1;
+        dynastyGameState.player.atk += rand;
+        dynastyLog(`[YOU] Attack Up! ATK increased by +${rand} (Now: ${dynastyGameState.player.atk})`, 'player');
+    };
+    const doPlayerDefUp = () => {
+        const rand = Math.floor(Math.random() * 3) + 1;
+        dynastyGameState.player.def += rand;
+        dynastyLog(`[YOU] Defense Up! DEF increased by +${rand} (Now: ${dynastyGameState.player.def})`, 'player');
+    };
+    const doPlayerHeal = () => {
+        const missing = dynastyGameState.player.maxHp - dynastyGameState.player.hp + 1;
+        const rand = Math.floor(Math.random() * missing) + 1;
+        dynastyGameState.player.hp += rand;
+        dynastyLog(`[YOU] Heals! HP restored by +${rand} (Now: ${dynastyGameState.player.hp})`, 'player');
+    };
+
+    const doCompAtkUp = () => {
+        const rand = Math.floor(Math.random() * 3) + 1;
+        dynastyGameState.comp.atk += rand;
+        dynastyLog(`[COMP] Attack Up! ATK increased by +${rand} (Now: ${dynastyGameState.comp.atk})`, 'comp');
+    };
+    const doCompDefUp = () => {
+        const rand = Math.floor(Math.random() * 3) + 1;
+        dynastyGameState.comp.def += rand;
+        dynastyLog(`[COMP] Defense Up! DEF increased by +${rand} (Now: ${dynastyGameState.comp.def})`, 'comp');
+    };
+    const doCompHeal = () => {
+        const missing = dynastyGameState.comp.maxHp - dynastyGameState.comp.hp + 1;
+        const rand = Math.floor(Math.random() * missing) + 1;
+        dynastyGameState.comp.hp += rand;
+        dynastyLog(`[COMP] Heals! HP restored by +${rand} (Now: ${dynastyGameState.comp.hp})`, 'comp');
+    };
+
+    if (pAction === 1) { // Player Attack
+        if (cAction === 1) {
+            dynastyLog(`[YOU] Attack! Dealt ${dynastyGameState.player.atk} DMG to Computer!`, 'player');
+            dynastyGameState.comp.hp -= dynastyGameState.player.atk;
+            if (dynastyGameState.comp.hp > 0) {
+                dynastyLog(`[COMP] Attacks back! Dealt ${dynastyGameState.comp.atk} DMG to You!`, 'comp');
+                dynastyGameState.player.hp -= dynastyGameState.comp.atk;
+            }
+        } else if (cAction === 2) {
+            dynastyLog(`[COMP] Defended against your attack!`, 'comp');
+            if (dynastyGameState.player.atk <= dynastyGameState.comp.def) {
+                dynastyLog(`[COMP] Defense (${dynastyGameState.comp.def}) blocked your Attack (${dynastyGameState.player.atk}) completely!`, 'comp');
+            } else {
+                const dmg = dynastyGameState.player.atk - dynastyGameState.comp.def;
+                dynastyGameState.comp.hp -= dmg;
+                dynastyLog(`[YOU] Dealt pierce damage of ${dmg} through Computer defense!`, 'player');
+            }
+        } else if (cAction === 3) {
+            dynastyLog(`[YOU] Attack! Dealt ${dynastyGameState.player.atk} DMG to Computer!`, 'player');
+            dynastyGameState.comp.hp -= dynastyGameState.player.atk;
+            if (dynastyGameState.comp.hp > 0) doCompAtkUp();
+        } else if (cAction === 4) {
+            dynastyLog(`[YOU] Attack! Dealt ${dynastyGameState.player.atk} DMG to Computer!`, 'player');
+            dynastyGameState.comp.hp -= dynastyGameState.player.atk;
+            if (dynastyGameState.comp.hp > 0) doCompDefUp();
+        } else if (cAction === 5) {
+            dynastyLog(`[YOU] Attack! Dealt ${dynastyGameState.player.atk} DMG to Computer!`, 'player');
+            dynastyGameState.comp.hp -= dynastyGameState.player.atk;
+            if (dynastyGameState.comp.hp > 0) doCompHeal();
+        }
+    } else if (pAction === 2) { // Player Defend
+        if (cAction === 1) {
+            dynastyLog(`[YOU] Defended against Computer attack!`, 'player');
+            if (dynastyGameState.comp.atk <= dynastyGameState.player.def) {
+                dynastyLog(`[YOU] Defense (${dynastyGameState.player.def}) blocked Computer Attack (${dynastyGameState.comp.atk}) completely!`, 'player');
+            } else {
+                const dmg = dynastyGameState.comp.atk - dynastyGameState.player.def;
+                dynastyGameState.player.hp -= dmg;
+                dynastyLog(`[COMP] Dealt pierce damage of ${dmg} through your defense!`, 'comp');
+            }
+        } else if (cAction === 2) {
+            dynastyLog(`[SYSTEM] Both fighters chose Defend! Nothing happens...`, 'sys');
+        } else if (cAction === 3) {
+            dynastyLog(`[YOU] Defends defensively!`, 'player');
+            doCompAtkUp();
+        } else if (cAction === 4) {
+            dynastyLog(`[YOU] Defends defensively!`, 'player');
+            doCompDefUp();
+        } else if (cAction === 5) {
+            dynastyLog(`[YOU] Defends defensively!`, 'player');
+            doCompHeal();
+        }
+    } else if (pAction === 3) { // Player Atk Up
+        doPlayerAtkUp();
+        if (cAction === 1) {
+            dynastyLog(`[COMP] Attacks! Dealt ${dynastyGameState.comp.atk} DMG to You!`, 'comp');
+            dynastyGameState.player.hp -= dynastyGameState.comp.atk;
+        } else if (cAction === 2) dynastyLog(`[COMP] Defends defensively!`, 'comp');
+        else if (cAction === 3) doCompAtkUp();
+        else if (cAction === 4) doCompDefUp();
+        else if (cAction === 5) doCompHeal();
+    } else if (pAction === 4) { // Player Def Up
+        doPlayerDefUp();
+        if (cAction === 1) {
+            dynastyLog(`[COMP] Attacks! Dealt ${dynastyGameState.comp.atk} DMG to You!`, 'comp');
+            dynastyGameState.player.hp -= dynastyGameState.comp.atk;
+        } else if (cAction === 2) dynastyLog(`[COMP] Defends defensively!`, 'comp');
+        else if (cAction === 3) doCompAtkUp();
+        else if (cAction === 4) doCompDefUp();
+        else if (cAction === 5) doCompHeal();
+    } else if (pAction === 5) { // Player Heal
+        doPlayerHeal();
+        if (cAction === 1) {
+            dynastyLog(`[COMP] Attacks! Dealt ${dynastyGameState.comp.atk} DMG to You!`, 'comp');
+            dynastyGameState.player.hp -= dynastyGameState.comp.atk;
+        } else if (cAction === 2) dynastyLog(`[COMP] Defends defensively!`, 'comp');
+        else if (cAction === 3) doCompAtkUp();
+        else if (cAction === 4) doCompDefUp();
+        else if (cAction === 5) doCompHeal();
+    }
+
+    updateDynastyHUD();
+
+    if (dynastyGameState.player.hp <= 0 || dynastyGameState.comp.hp <= 0) {
+        dynastyGameState.isOver = true;
+        setTimeout(() => {
+            showDynastyScreen('game-screen-result');
+            const resTitle = document.getElementById('result-title');
+            const resDesc = document.getElementById('result-desc');
+            const resIcon = document.getElementById('result-icon');
+            if (dynastyGameState.player.hp > dynastyGameState.comp.hp) {
+                if (resIcon) resIcon.textContent = "🏆";
+                if (resTitle) resTitle.textContent = "KAMU MENANG!";
+                if (resDesc) resDesc.textContent = "Luar biasa! Kamu berhasil mengalahkan AI komputer dalam pertarungan strategi Dynasty of War!";
+            } else {
+                if (resIcon) resIcon.textContent = "💀";
+                if (resTitle) resTitle.textContent = "KAMU KALAH!";
+                if (resDesc) resDesc.textContent = "Jangan menyerah! AI komputer lebih unggul kali ini. Coba lagi dengan taktik berbeda!";
+            }
+        }, 800);
+    }
+}
+
+document.querySelectorAll('.battle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (dynastyGameState.isOver) return;
+        const pAction = parseInt(btn.getAttribute('data-action'));
+        const cAction = Math.floor(Math.random() * 5) + 1;
+        executeDynastyTurn(pAction, cAction);
+    });
+});
+
+const btnPlayAgain = document.getElementById('btn-play-again');
+if (btnPlayAgain) {
+    btnPlayAgain.addEventListener('click', resetDynastySimulator);
 }

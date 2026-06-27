@@ -330,9 +330,10 @@
                         <div class="project-thumb-box">
                             <img src="Assets/ProjectDynastyofWar/banner.png" alt="Dynasty of War - Tactical Turn-Based RPG"
                                 class="project-img" loading="lazy" decoding="async">
-                            <div class="project-img-overlay">
+                            <div class="project-img-overlay" style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
                                 <span class="action-pill" data-tr="pill-3"><i class="ph ph-corners-out"></i> Open Gallery Grid (4
                                     Images)</span>
+                                <button class="action-pill play-game-launcher" style="background: linear-gradient(135deg, #6366f1, #a855f7); border: none; cursor: pointer;"><i class="ph-bold ph-game-controller"></i> <span data-tr="play-btn-text">Play Game Simulator</span></button>
                             </div>
                         </div>
                         <div class="project-details">
@@ -466,7 +467,10 @@
             <div class="project-modal-glass">
                 <div class="project-modal-top">
                     <div class="modal-title-area">
-                        <span class="exp-badge" data-tr="mod-badge-3"><i class="ph ph-images"></i> Documentation Gallery</span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.3rem;">
+                            <span class="exp-badge" data-tr="mod-badge-3"><i class="ph ph-images"></i> Documentation Gallery</span>
+                            <button class="play-game-btn play-game-launcher"><i class="ph-bold ph-game-controller"></i> <span data-tr="play-btn-text">Play Game Simulator</span></button>
+                        </div>
                         <h3 data-tr="mod-head-3">Dynasty of War — Tactical Turn-Based RPG</h3>
                     </div>
                     <button class="modal-close-btn close-gallery-modal" aria-label="Close Gallery">
@@ -495,6 +499,117 @@
                             data-caption="C++ Terminal & Core Engine Execution — View of the backend C++ source code structure and real-time command-line battle execution console utilizing Object-Oriented architecture.">
                             <img src="Assets/ProjectDynastyofWar/terminal.png" alt="Dynasty of War Terminal Log" loading="lazy" decoding="async">
                             <div class="cell-zoom-pill"><i class="ph ph-magnifying-glass-plus"></i> Zoom</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project 3 Interactive Game Simulator Modal -->
+        <div id="modal-dynasty-simulator" class="project-modal-backdrop game-simulator-modal">
+            <div class="project-modal-glass game-glass">
+                <div class="project-modal-top game-top">
+                    <div class="modal-title-area">
+                        <span class="exp-badge game-badge"><i class="ph ph-terminal-window"></i> C++ Engine Emulator</span>
+                        <h3>Dynasty of War — Arena Simulator</h3>
+                    </div>
+                    <button class="modal-close-btn close-game-modal" aria-label="Close Game">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+                <div class="game-content">
+                    <!-- Screen 1: Character Selection -->
+                    <div id="game-screen-select" class="game-screen active">
+                        <h4 class="select-title" data-tr="select-hero">Select Your Warrior Class</h4>
+                        <p class="select-subtitle" data-tr="select-sub">Choose your hero to enter the turn-based tactical arena against the computer AI.</p>
+                        <div class="class-grid">
+                            <div class="class-card" data-class="Ogre">
+                                <div class="class-icon">👹</div>
+                                <h5>Ogre</h5>
+                                <div class="class-stats"><span>HP: 10</span> • <span>ATK: 3</span> • <span>DEF: 2</span></div>
+                            </div>
+                            <div class="class-card" data-class="Knight">
+                                <div class="class-icon">🛡️</div>
+                                <h5>Knight</h5>
+                                <div class="class-stats"><span>HP: 10</span> • <span>ATK: 3</span> • <span>DEF: 2</span></div>
+                            </div>
+                            <div class="class-card" data-class="Mage">
+                                <div class="class-icon">🧙‍♂️</div>
+                                <h5>Mage</h5>
+                                <div class="class-stats"><span>HP: 10</span> • <span>ATK: 3</span> • <span>DEF: 2</span></div>
+                            </div>
+                            <div class="class-card" data-class="Swordsman">
+                                <div class="class-icon">⚔️</div>
+                                <h5>Swordsman</h5>
+                                <div class="class-stats"><span>HP: 10</span> • <span>ATK: 3</span> • <span>DEF: 2</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screen 2: Battle Arena -->
+                    <div id="game-screen-battle" class="game-screen">
+                        <!-- HUD Stats -->
+                        <div class="battle-hud">
+                            <!-- Player Status -->
+                            <div class="fighter-card player-fighter">
+                                <div class="fighter-header">
+                                    <span class="fighter-name" id="hud-player-name">Player (Knight)</span>
+                                    <span class="fighter-hp-text" id="hud-player-hp-text">10 / 10</span>
+                                </div>
+                                <div class="hp-bar-bg"><div class="hp-bar-fill player-hp-fill" id="hud-player-hp-bar"></div></div>
+                                <div class="stat-badges">
+                                    <span class="stat-badge"><i class="ph-bold ph-sword"></i> ATK: <b id="hud-player-atk">3</b></span>
+                                    <span class="stat-badge"><i class="ph-bold ph-shield"></i> DEF: <b id="hud-player-def">2</b></span>
+                                </div>
+                            </div>
+
+                            <div class="battle-vs">VS</div>
+
+                            <!-- Comp Status -->
+                            <div class="fighter-card comp-fighter">
+                                <div class="fighter-header">
+                                    <span class="fighter-name" id="hud-comp-name">Computer (Ogre)</span>
+                                    <span class="fighter-hp-text" id="hud-comp-hp-text">10 / 10</span>
+                                </div>
+                                <div class="hp-bar-bg"><div class="hp-bar-fill comp-hp-fill" id="hud-comp-hp-bar"></div></div>
+                                <div class="stat-badges">
+                                    <span class="stat-badge"><i class="ph-bold ph-sword"></i> ATK: <b id="hud-comp-atk">3</b></span>
+                                    <span class="stat-badge"><i class="ph-bold ph-shield"></i> DEF: <b id="hud-comp-def">2</b></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Console Terminal Log -->
+                        <div class="terminal-container">
+                            <div class="terminal-header">
+                                <div class="terminal-dots">
+                                    <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
+                                </div>
+                                <span class="terminal-title">DynastyOfWar.exe — Console Log</span>
+                            </div>
+                            <div id="game-terminal-log" class="terminal-body"></div>
+                        </div>
+
+                        <!-- Battle Actions Controls -->
+                        <div class="battle-controls">
+                            <span class="controls-label" data-tr="choose-action">CHOOSE YOUR TACTICAL MOVE:</span>
+                            <div class="action-btn-grid">
+                                <button class="battle-btn atk-btn" data-action="1"><i class="ph-bold ph-sword"></i> Serang (Attack)</button>
+                                <button class="battle-btn def-btn" data-action="2"><i class="ph-bold ph-shield-check"></i> Defend</button>
+                                <button class="battle-btn buff-btn" data-action="3"><i class="ph-bold ph-trend-up"></i> Atk Up (+1-3)</button>
+                                <button class="battle-btn buff-btn" data-action="4"><i class="ph-bold ph-shield-plus"></i> Def Up (+1-3)</button>
+                                <button class="battle-btn heal-btn" data-action="5"><i class="ph-bold ph-heart-up"></i> Heal</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screen 3: Game Over Result -->
+                    <div id="game-screen-result" class="game-screen">
+                        <div class="result-box">
+                            <div id="result-icon" class="result-icon">🏆</div>
+                            <h4 id="result-title" class="result-title">YOU WIN!</h4>
+                            <p id="result-desc" class="result-desc">You have successfully defeated the computer AI in glorious tactical combat!</p>
+                            <button id="btn-play-again" class="play-again-btn"><i class="ph-bold ph-arrow-counter-clockwise"></i> Play Again</button>
                         </div>
                     </div>
                 </div>
