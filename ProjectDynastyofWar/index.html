@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynasty of War — 2D AdventureQuest Worlds RPG</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Audio Mute Toggle -->
+        <button id="btn-sound-toggle" class="sound-toggle" title="Toggle Sound Effects">
+            <i class="ph-bold ph-speaker-high"></i>
+        </button>
+
+        <!-- SCREEN 1: CHARACTER SELECT -->
+        <div id="select-screen" class="screen active">
+            <div class="select-header">
+                <span class="game-badge"><i class="ph-bold ph-swords"></i> TACTICAL 2D ARENA</span>
+                <h1 class="game-title">DYNASTY OF WAR</h1>
+                <p class="game-subtitle">Select your warrior class to enter the combat arena against the AI Boss.</p>
+            </div>
+            <div class="class-grid">
+                <div class="class-card" data-class="Knight" data-img="assets/knight.png" data-hp="25" data-atk="5" data-def="4">
+                    <div class="card-img-wrap"><img src="assets/knight.png" alt="Knight"></div>
+                    <h3>Holy Knight</h3>
+                    <p class="class-desc">Balanced protector with sturdy armor and reliable strike power.</p>
+                    <div class="class-stats">
+                        <span><i class="ph-bold ph-heart"></i> HP: 25</span>
+                        <span><i class="ph-bold ph-sword"></i> ATK: 5</span>
+                        <span><i class="ph-bold ph-shield"></i> DEF: 4</span>
+                    </div>
+                </div>
+                <div class="class-card" data-class="Mage" data-img="assets/mage.png" data-hp="20" data-atk="7" data-def="2">
+                    <div class="card-img-wrap"><img src="assets/mage.png" alt="Mage"></div>
+                    <h3>Arcane Mage</h3>
+                    <p class="class-desc">High-damage spellcaster capable of devastating mystical attacks.</p>
+                    <div class="class-stats">
+                        <span><i class="ph-bold ph-heart"></i> HP: 20</span>
+                        <span><i class="ph-bold ph-sword"></i> ATK: 7</span>
+                        <span><i class="ph-bold ph-shield"></i> DEF: 2</span>
+                    </div>
+                </div>
+                <div class="class-card" data-class="Swordsman" data-img="assets/swordsman.png" data-hp="22" data-atk="6" data-def="3">
+                    <div class="card-img-wrap"><img src="assets/swordsman.png" alt="Swordsman"></div>
+                    <h3>Shadow Swordsman</h3>
+                    <p class="class-desc">Agile dual-blade rogue specialized in piercing strikes and evasive tactics.</p>
+                    <div class="class-stats">
+                        <span><i class="ph-bold ph-heart"></i> HP: 22</span>
+                        <span><i class="ph-bold ph-sword"></i> ATK: 6</span>
+                        <span><i class="ph-bold ph-shield"></i> DEF: 3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: BATTLE ARENA -->
+        <div id="battle-screen" class="screen">
+            <!-- TOP HUD -->
+            <header class="battle-hud">
+                <!-- Player Profile -->
+                <div class="hud-fighter player-hud">
+                    <div class="hud-portrait"><img id="hud-player-img" src="assets/knight.png" alt="Player"></div>
+                    <div class="hud-info">
+                        <div class="hud-name-row">
+                            <span id="hud-player-name" class="fighter-name">Player (Knight)</span>
+                            <span id="hud-player-hp-txt" class="hp-txt">25 / 25</span>
+                        </div>
+                        <div class="hp-bar-track"><div id="hud-player-hp-bar" class="hp-bar-fill player-fill"></div></div>
+                        <div class="hud-stats-row">
+                            <span class="stat-pill atk-pill"><i class="ph-bold ph-sword"></i> <b id="hud-player-atk">5</b> ATK</span>
+                            <span class="stat-pill def-pill"><i class="ph-bold ph-shield"></i> <b id="hud-player-def">4</b> DEF</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VS Badge -->
+                <div class="hud-vs">VS</div>
+
+                <!-- Enemy Profile -->
+                <div class="hud-fighter enemy-hud">
+                    <div class="hud-info text-right">
+                        <div class="hud-name-row justify-end">
+                            <span id="hud-enemy-hp-txt" class="hp-txt">30 / 30</span>
+                            <span id="hud-enemy-name" class="fighter-name">Ogre Berserker</span>
+                        </div>
+                        <div class="hp-bar-track"><div id="hud-enemy-hp-bar" class="hp-bar-fill enemy-fill"></div></div>
+                        <div class="hud-stats-row justify-end">
+                            <span class="stat-pill def-pill"><i class="ph-bold ph-shield"></i> <b id="hud-enemy-def">3</b> DEF</span>
+                            <span class="stat-pill atk-pill"><i class="ph-bold ph-sword"></i> <b id="hud-enemy-atk">6</b> ATK</span>
+                        </div>
+                    </div>
+                    <div class="hud-portrait enemy-portrait"><img id="hud-enemy-img" src="assets/ogre.png" alt="Enemy"></div>
+                </div>
+            </header>
+
+            <!-- ARENA STAGE (2D SIDE-VIEW) -->
+            <div class="arena-stage" style="background-image: url('assets/arena_bg.png');">
+                <!-- Floating Damage & Effect Container -->
+                <div id="floating-text-layer" class="floating-layer"></div>
+
+                <!-- Player Character Avatar -->
+                <div id="player-sprite-box" class="sprite-box player-sprite idle">
+                    <div id="player-visual-effect" class="visual-effect"></div>
+                    <img id="player-sprite-img" src="assets/knight.png" alt="Player Sprite">
+                    <div class="shadow-oval"></div>
+                </div>
+
+                <!-- Enemy Character Avatar -->
+                <div id="enemy-sprite-box" class="sprite-box enemy-sprite idle">
+                    <div id="enemy-visual-effect" class="visual-effect"></div>
+                    <img id="enemy-sprite-img" src="assets/ogre.png" alt="Enemy Sprite">
+                    <div class="shadow-oval"></div>
+                </div>
+            </div>
+
+            <!-- COMBAT LOG -->
+            <div class="combat-log-bar">
+                <i class="ph-bold ph-terminal-window log-icon"></i>
+                <div id="battle-log" class="log-content">Combat initiated! Prepare your turn...</div>
+            </div>
+
+            <!-- BOTTOM AQW ACTION SKILL BAR -->
+            <footer class="aqw-action-bar">
+                <div class="bar-label">SELECT YOUR TACTICAL ACTION</div>
+                <div class="skills-grid">
+                    <button class="skill-btn skill-attack" data-action="1" title="Strike the enemy with weapon power">
+                        <div class="skill-icon"><i class="ph-bold ph-sword"></i></div>
+                        <span class="skill-name">Serang</span>
+                        <span class="skill-hotkey">1</span>
+                    </button>
+                    <button class="skill-btn skill-defend" data-action="2" title="Block incoming attack to mitigate damage">
+                        <div class="skill-icon"><i class="ph-bold ph-shield-check"></i></div>
+                        <span class="skill-name">Defend</span>
+                        <span class="skill-hotkey">2</span>
+                    </button>
+                    <button class="skill-btn skill-buff-atk" data-action="3" title="Boost Attack power by +2 to +5">
+                        <div class="skill-icon"><i class="ph-bold ph-trend-up"></i></div>
+                        <span class="skill-name">Atk Up</span>
+                        <span class="skill-hotkey">3</span>
+                    </button>
+                    <button class="skill-btn skill-buff-def" data-action="4" title="Boost Defense power by +2 to +5">
+                        <div class="skill-icon"><i class="ph-bold ph-shield-plus"></i></div>
+                        <span class="skill-name">Def Up</span>
+                        <span class="skill-hotkey">4</span>
+                    </button>
+                    <button class="skill-btn skill-heal" data-action="5" title="Restore lost HP with magic aura">
+                        <div class="skill-icon"><i class="ph-bold ph-heart-up"></i></div>
+                        <span class="skill-name">Heal</span>
+                        <span class="skill-hotkey">5</span>
+                    </button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- SCREEN 3: RESULT -->
+        <div id="result-screen" class="screen">
+            <div class="result-card">
+                <div id="result-icon-box" class="result-icon-box">🏆</div>
+                <h2 id="result-title">VICTORY!</h2>
+                <p id="result-message">You have triumphed over the Ogre Berserker in glorious combat!</p>
+                <div class="result-stats-summary" id="result-stats"></div>
+                <button id="btn-play-again" class="btn-play-again">
+                    <i class="ph-bold ph-arrow-counter-clockwise"></i> Return to Arena
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

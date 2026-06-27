@@ -939,6 +939,10 @@ document.querySelectorAll('.play-game-launcher').forEach(launcher => {
             modalSimulator.classList.add('active');
             document.body.style.overflow = 'hidden';
             resetDynastySimulator();
+            const gameFrame = modalSimulator.querySelector('iframe');
+            if (gameFrame) {
+                gameFrame.src = 'ProjectDynastyofWar/index.html';
+            }
         }
     });
 });
