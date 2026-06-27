@@ -275,6 +275,18 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             splash.removeEventListener('click', onUserGesture);
             splash.removeEventListener('touchstart', onUserGesture);
 
+            // Force browser into fullscreen mode on initial tap/click
+            try {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (e) {}
+
             // Init audio inside user gesture — browser guarantees it will be "running"
             initAudio();
 
@@ -795,3 +807,44 @@ window.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// Fullscreen Toggle functionality
+const fsBtn = document.getElementById('fullscreen-toggle');
+if (fsBtn) {
+    function updateFullscreenIcon() {
+        const icon = fsBtn.querySelector('i');
+        if (!icon) return;
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+            icon.className = 'ph ph-corners-in';
+            fsBtn.parentElement.setAttribute('data-tooltip', 'Exit Fullscreen');
+        } else {
+            icon.className = 'ph ph-corners-out';
+            fsBtn.parentElement.setAttribute('data-tooltip', 'Toggle Fullscreen');
+        }
+    }
+
+    fsBtn.addEventListener('click', () => {
+        const elem = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    });
+
+    document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+    document.addEventListener('msfullscreenchange', updateFullscreenIcon);
+}
