@@ -45,35 +45,29 @@ body.splash-active {
 body.splash-active .header,
 body.splash-active .content {
     opacity: 0;
-    transform: scale(1.06) translateY(30px);
-    filter: blur(12px);
+    transform: translate3d(0, 24px, 0) scale(0.98);
     pointer-events: none;
 }
 
 body.splash-active .dock {
     opacity: 0;
-    transform: translateX(-50%) scale(1.06) translateY(30px);
-    filter: blur(12px);
+    transform: translate3d(-50%, 24px, 0) scale(0.98);
     pointer-events: none;
 }
 
 body:not(.splash-active) .header,
 body:not(.splash-active) .content {
     opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-    transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.3s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translate3d(0, 0, 0) scale(1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 body:not(.splash-active) .dock {
     opacity: 1;
-    transform: translateX(-50%) scale(1) translateY(0);
-    filter: blur(0px);
-    transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.3s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translate3d(-50%, 0, 0) scale(1);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .intro-splash {
@@ -115,9 +109,8 @@ body:not(.splash-active) .dock {
 
 .intro-splash.exit .kinetic-container {
     opacity: 0;
-    transform: scale(2.2);
-    filter: blur(15px);
-    transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease-out;
+    transform: scale(1.6);
+    transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
 }
 
@@ -1868,16 +1861,6 @@ body.light-theme .dock-item::after {
     /* Mobile GPU & Scroll Fillrate Polish */
     .image-backdrop {
         filter: blur(25px);
-        will-change: transform, opacity;
-    }
-
-    .education-card,
-    .timeline-item,
-    .project-card,
-    .about-image-card {
-        will-change: transform, opacity;
-        transform: translateZ(0);
-        backface-visibility: hidden;
     }
 }
 

@@ -287,6 +287,8 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
     let bgmGain = null;
     let bgmPulseInterval = null;
+    let activeDroneOsc = null;
+    let activeLfo = null;
 
     // ─────────────────────────────────────────────────────
     // 🎬 BLOCKBUSTER BGM: Dark Action Drone & Arpeggio Pulse
@@ -318,6 +320,9 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
         droneOsc.connect(droneFilter).connect(bgmGain);
         droneOsc.start(now);
+
+        activeDroneOsc = droneOsc;
+        activeLfo = lfo;
 
         // 2. Action Trailer Driving Synth Pulse (16th notes at 125 BPM)
         const notes = [110, 110, 130.81, 146.83, 110, 164.81, 146.83, 130.81];
@@ -359,8 +364,11 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
         const now = audioCtx.currentTime;
         bgmGain.gain.setValueAtTime(bgmGain.gain.value, now);
-        bgmGain.gain.exponentialRampToValueAtTime(0.18, now + 1.0);
-        bgmGain.gain.exponentialRampToValueAtTime(0.001, now + 16.0);
+        bgmGain.gain.exponentialRampToValueAtTime(0.08, now + 0.6);
+        bgmGain.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
+
+        if (activeDroneOsc) { activeDroneOsc.stop(now + 3.1); activeDroneOsc = null; }
+        if (activeLfo) { activeLfo.stop(now + 3.1); activeLfo = null; }
 
         const chordNotes = [220, 261.63, 329.63, 392.00, 523.25];
         chordNotes.forEach((freq, idx) => {
@@ -372,8 +380,8 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             osc.frequency.setValueAtTime(freq, now);
 
             g.gain.setValueAtTime(0.01, now);
-            g.gain.linearRampToValueAtTime(0.09, now + 0.8);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 14.0);
+            g.gain.linearRampToValueAtTime(0.06, now + 0.3);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
 
             if (pan) {
                 pan.pan.setValueAtTime((idx - 2) * 0.3, now);
@@ -382,7 +390,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
                 osc.connect(g).connect(getMaster());
             }
             osc.start(now);
-            osc.stop(now + 14.5);
+            osc.stop(now + 3.1);
         });
     }
     // ========== END PERCUSSIVE STOMP AUDIO ENGINE ==========
@@ -483,7 +491,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         if (audioCtx && audioCtx.state !== 'closed') {
             setTimeout(() => {
                 audioCtx.close().catch(() => { });
-            }, 20000);
+            }, 3500);
         }
     }
 
@@ -798,6 +806,9 @@ const observer = new IntersectionObserver((entries, observer) => {
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translate3d(0, 0, 0)';
             observer.unobserve(entry.target);
+            setTimeout(() => {
+                entry.target.style.willChange = 'auto';
+            }, 650);
         }
     });
 }, observerOptions);
@@ -862,26 +873,44 @@ const allGalleryModals = document.querySelectorAll('.gallery-modal');
 const allCloseModalBtns = document.querySelectorAll('.close-gallery-modal');
 
 function openGalleryModal(modalEl) {
-    if (!modalEl) return;
+    if (!modalEl || modalEl.classList.contains('active')) return;
     modalEl.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
 function closeAllGalleryModals() {
-    allGalleryModals.forEach(m => m.classList.remove('active'));
-    document.body.style.overflow = '';
+    let wasActive = false;
+    allGalleryModals.forEach(m => {
+        if (m.classList.contains('active')) {
+            m.classList.remove('active');
+            wasActive = true;
+        }
+    });
+    if (wasActive) {
+        document.body.style.overflow = '';
+    }
 }
 
 if (projectCardSdm && modalSdm) {
-    projectCardSdm.addEventListener('click', () => openGalleryModal(modalSdm));
+    projectCardSdm.addEventListener('click', (e) => {
+        e.preventDefault();
+        openGalleryModal(modalSdm);
+    });
 }
 
 if (projectCardLpmi && modalLpmi) {
-    projectCardLpmi.addEventListener('click', () => openGalleryModal(modalLpmi));
+    projectCardLpmi.addEventListener('click', (e) => {
+        e.preventDefault();
+        openGalleryModal(modalLpmi);
+    });
 }
 
 allCloseModalBtns.forEach(btn => {
-    btn.addEventListener('click', closeAllGalleryModals);
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAllGalleryModals();
+    });
 });
 
 allGalleryModals.forEach(modal => {
