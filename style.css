@@ -43,19 +43,33 @@ body.splash-active {
 
 /* Cinematic Website Entrance underneath Curtain */
 body.splash-active .header,
-body.splash-active .content,
-body.splash-active .dock {
+body.splash-active .content {
     opacity: 0;
     transform: scale(1.06) translateY(30px);
     filter: blur(12px);
     pointer-events: none;
 }
 
+body.splash-active .dock {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.06) translateY(30px);
+    filter: blur(12px);
+    pointer-events: none;
+}
+
 body:not(.splash-active) .header,
-body:not(.splash-active) .content,
-body:not(.splash-active) .dock {
+body:not(.splash-active) .content {
     opacity: 1;
     transform: scale(1) translateY(0);
+    filter: blur(0px);
+    transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body:not(.splash-active) .dock {
+    opacity: 1;
+    transform: translateX(-50%) scale(1) translateY(0);
     filter: blur(0px);
     transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
                 transform 1.3s cubic-bezier(0.16, 1, 0.3, 1),
@@ -97,6 +111,14 @@ body:not(.splash-active) .dock {
 
 .intro-splash.exit .splash-layer-bottom {
     transform: translateY(100%);
+}
+
+.intro-splash.exit .kinetic-container {
+    opacity: 0;
+    transform: scale(2.2);
+    filter: blur(15px);
+    transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease-out;
+    pointer-events: none;
 }
 
 /* Center container for kinetic typography */
@@ -1861,25 +1883,9 @@ body.light-theme .dock-item::after {
 
 @media (max-width: 400px) {
     .dock {
-        bottom: 1rem;
-        padding: 0.3rem 0.4rem;
-        max-width: calc(100vw - 1rem);
-    }
-
-    .dock-list {
-        gap: 0.15rem;
-    }
-
-    .dock-link {
-        width: 32px;
-        height: 32px;
-        font-size: 1.05rem;
-    }
-}
-
-@media (max-width: 350px) {
-    .dock {
+        bottom: 0.8rem;
         padding: 0.25rem 0.35rem;
+        max-width: calc(100vw - 0.6rem);
     }
 
     .dock-list {
@@ -1890,6 +1896,22 @@ body.light-theme .dock-item::after {
         width: 28px;
         height: 28px;
         font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .dock {
+        padding: 0.2rem 0.25rem;
+    }
+
+    .dock-list {
+        gap: 0.05rem;
+    }
+
+    .dock-link {
+        width: 25px;
+        height: 25px;
+        font-size: 0.85rem;
     }
 }
 

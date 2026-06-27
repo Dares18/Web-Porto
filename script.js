@@ -129,12 +129,12 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         const sub = audioCtx.createOscillator();
         const subG = audioCtx.createGain();
         sub.type = 'sine';
-        sub.frequency.setValueAtTime(160, now);
-        sub.frequency.exponentialRampToValueAtTime(35, now + 0.12);
-        sub.frequency.exponentialRampToValueAtTime(20, now + 0.6);
+        sub.frequency.setValueAtTime(180, now);
+        sub.frequency.exponentialRampToValueAtTime(32, now + 0.12);
+        sub.frequency.exponentialRampToValueAtTime(18, now + 0.65);
         subG.gain.setValueAtTime(0, now);
-        subG.gain.linearRampToValueAtTime(0.8, now + 0.005);
-        subG.gain.exponentialRampToValueAtTime(0.15, now + 0.2);
+        subG.gain.linearRampToValueAtTime(0.85, now + 0.005);
+        subG.gain.exponentialRampToValueAtTime(0.18, now + 0.2);
         subG.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
         sub.connect(subG).connect(out);
         sub.start(now);
@@ -284,6 +284,107 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             burst.stop(drop + 0.08);
         }
     }
+
+    let bgmGain = null;
+    let bgmPulseInterval = null;
+
+    // ─────────────────────────────────────────────────────
+    // 🎬 BLOCKBUSTER BGM: Dark Action Drone & Arpeggio Pulse
+    // ─────────────────────────────────────────────────────
+    function startCinematicBGM() {
+        if (!sfxEnabled || !audioCtx) return;
+        const now = audioCtx.currentTime;
+        const out = getMaster();
+
+        bgmGain = audioCtx.createGain();
+        bgmGain.gain.setValueAtTime(0.01, now);
+        bgmGain.gain.linearRampToValueAtTime(0.32, now + 1.2);
+        bgmGain.connect(out);
+
+        // 1. Deep Sub Drone (55 Hz)
+        const droneOsc = audioCtx.createOscillator();
+        const droneFilter = audioCtx.createBiquadFilter();
+        droneOsc.type = 'sawtooth';
+        droneOsc.frequency.setValueAtTime(55, now);
+        droneFilter.type = 'lowpass';
+        droneFilter.frequency.setValueAtTime(130, now);
+
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        lfo.frequency.setValueAtTime(0.5, now);
+        lfoGain.gain.setValueAtTime(45, now);
+        lfo.connect(droneFilter.frequency);
+        lfo.start(now);
+
+        droneOsc.connect(droneFilter).connect(bgmGain);
+        droneOsc.start(now);
+
+        // 2. Action Trailer Driving Synth Pulse (16th notes at 125 BPM)
+        const notes = [110, 110, 130.81, 146.83, 110, 164.81, 146.83, 130.81];
+        let step = 0;
+
+        function playPulseNote() {
+            if (!audioCtx || audioCtx.state === 'closed' || !bgmGain) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const g = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(notes[step % notes.length], t);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(700, t);
+            filter.frequency.exponentialRampToValueAtTime(140, t + 0.1);
+
+            g.gain.setValueAtTime(0.24, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+
+            osc.connect(filter).connect(g).connect(bgmGain);
+            osc.start(t);
+            osc.stop(t + 0.12);
+
+            step++;
+        }
+
+        bgmPulseInterval = setInterval(playPulseNote, 120);
+    }
+
+    // ─────────────────────────────────────────────────────
+    // 🌌 PORTFOLIO REVEAL: Majestic Futuristic Shimmer Tail
+    // ─────────────────────────────────────────────────────
+    function transitionBGMToPortfolio() {
+        if (!audioCtx || !bgmGain) return;
+        if (bgmPulseInterval) clearInterval(bgmPulseInterval);
+
+        const now = audioCtx.currentTime;
+        bgmGain.gain.setValueAtTime(bgmGain.gain.value, now);
+        bgmGain.gain.exponentialRampToValueAtTime(0.18, now + 1.0);
+        bgmGain.gain.exponentialRampToValueAtTime(0.001, now + 16.0);
+
+        const chordNotes = [220, 261.63, 329.63, 392.00, 523.25];
+        chordNotes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            const pan = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+
+            g.gain.setValueAtTime(0.01, now);
+            g.gain.linearRampToValueAtTime(0.09, now + 0.8);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 14.0);
+
+            if (pan) {
+                pan.pan.setValueAtTime((idx - 2) * 0.3, now);
+                osc.connect(g).connect(pan).connect(getMaster());
+            } else {
+                osc.connect(g).connect(getMaster());
+            }
+            osc.start(now);
+            osc.stop(now + 14.5);
+        });
+    }
     // ========== END PERCUSSIVE STOMP AUDIO ENGINE ==========
 
     // ═══════════════════════════════════════════════════════════════════
@@ -293,6 +394,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         const words = Array.from(splash.querySelectorAll('.kinetic-word'));
         words.forEach(w => w.classList.remove('k-active', 'k-out'));
 
+        startCinematicBGM();
         await wait(300);
 
         // Act 1: "DON'T BLINK." (Stomp)
@@ -368,6 +470,9 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         sfxMegaDrop(); // Riser starts and hits exactly at 0.55s
         await wait(550);
 
+        words[9].classList.add('k-out');
+        transitionBGMToPortfolio();
+
         // 💥 MEGA BOOM DROP! Open curtains AND trigger cinematic entrance of web content!
         splash.classList.add('exit');
         document.body.classList.remove('splash-active');
@@ -378,7 +483,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         if (audioCtx && audioCtx.state !== 'closed') {
             setTimeout(() => {
                 audioCtx.close().catch(() => { });
-            }, 3000);
+            }, 20000);
         }
     }
 
