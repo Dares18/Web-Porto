@@ -2514,10 +2514,14 @@ body.light-theme .lightbox-desc-text {
     }
 
     .game-content {
-        padding: 1.2rem;
+        padding: 0 !important;
     }
 
     .game-top {
-        padding: 1.2rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .game-top h3 {
+        font-size: 1.1rem !important;
     }
 }

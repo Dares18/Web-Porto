@@ -764,11 +764,73 @@ body {
     box-shadow: 0 10px 25px rgba(217, 119, 6, 0.6);
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
-    .hud-portrait { width: 48px; height: 48px; }
-    .fighter-name { font-size: 0.9rem; }
-    .skills-grid { gap: 0.5rem; }
-    .skill-btn { min-width: 65px; padding: 0.5rem 0.6rem; }
-    .sprite-box { width: 140px; height: 180px; }
+/* Comprehensive Responsive Optimizations for Tablets & Smartphones */
+@media (max-width: 768px) {
+    /* Screen 1: Character Select */
+    #select-screen { padding: 1rem; }
+    .select-header { margin-bottom: 1.2rem; }
+    .game-title { font-size: 1.8rem; }
+    .game-subtitle { font-size: 0.9rem; max-width: 100%; }
+    .class-grid { gap: 0.8rem; grid-template-columns: 1fr; }
+    .class-card { 
+        padding: 0.8rem 1rem; 
+        flex-direction: row; 
+        text-align: left; 
+        gap: 1rem; 
+        align-items: center; 
+    }
+    .card-img-wrap { width: 70px; height: 80px; margin-bottom: 0; flex-shrink: 0; }
+    .card-info { flex-grow: 1; }
+    .class-card h3 { font-size: 1.15rem; margin-bottom: 0.2rem; }
+    .class-desc { font-size: 0.78rem; margin-bottom: 0.5rem; }
+    .class-stats { justify-content: flex-start; padding: 0.35rem; font-size: 0.72rem; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Screen 2: Battle Arena HUD */
+    .battle-hud { padding: 0.5rem 0.6rem; }
+    .hud-fighter { width: 45%; gap: 0.3rem; }
+    .hud-portrait { display: none; } /* Hide portraits to give 100% space to names and HP bars */
+    .hud-name-row { flex-direction: column; align-items: flex-start; gap: 0.1rem; margin-bottom: 0.2rem; }
+    .enemy-hud .hud-name-row { align-items: flex-end; }
+    .fighter-name { font-size: 0.82rem; line-height: 1.1; }
+    .hp-txt { font-size: 0.72rem; }
+    .hud-stats-row { gap: 0.3rem; }
+    .stat-pill { font-size: 0.62rem; padding: 0.1rem 0.3rem; }
+    .hud-vs { font-size: 1rem; margin: 0 0.1rem; }
+
+    /* Arena Stage & Sprites */
+    .arena-stage { padding: 0 2% 1.2rem 2%; }
+    .sprite-box { width: clamp(100px, 32vw, 140px); height: clamp(130px, 42vw, 180px); }
+
+    /* Combat Log & Sound Toggle */
+    .combat-log-bar { padding: 0.35rem 0.6rem; font-size: 0.72rem; }
+    .sound-toggle { top: 0.4rem; right: 0.4rem; width: 34px; height: 34px; font-size: 1rem; }
+
+    /* Action Skill Bar */
+    .aqw-action-bar { padding: 0.5rem 0.3rem 0.7rem 0.3rem; }
+    .bar-label { font-size: 0.62rem; margin-bottom: 0.35rem; }
+    .skills-grid { 
+        display: flex; 
+        flex-wrap: nowrap; 
+        width: 100%; 
+        justify-content: space-between; 
+        gap: 0.25rem; 
+    }
+    .skill-btn { 
+        flex: 1; 
+        min-width: 0; 
+        padding: 0.4rem 0.1rem; 
+        border-radius: 8px; 
+        gap: 0.2rem; 
+    }
+    .skill-icon { width: 28px; height: 28px; font-size: 1.1rem; }
+    .skill-name { font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .skill-hotkey { display: none; }
+}
+
+@media (max-width: 400px) {
+    .class-card { flex-direction: column; text-align: center; }
+    .card-img-wrap { width: 90px; height: 100px; margin-bottom: 0.5rem; }
+    .class-stats { justify-content: center; }
+    .skill-name { font-size: 0.58rem; }
+    .skill-icon { width: 24px; height: 24px; font-size: 0.95rem; }
 }
