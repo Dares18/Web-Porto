@@ -873,7 +873,7 @@ const allGalleryModals = document.querySelectorAll('.gallery-modal');
 const allCloseModalBtns = document.querySelectorAll('.close-gallery-modal');
 
 function openGalleryModal(modalEl) {
-    if (!modalEl || modalEl.classList.contains('active')) return;
+    if (!modalEl) return;
     modalEl.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -892,17 +892,27 @@ function closeAllGalleryModals() {
 }
 
 if (projectCardSdm && modalSdm) {
-    projectCardSdm.addEventListener('click', (e) => {
-        e.preventDefault();
-        openGalleryModal(modalSdm);
-    });
+    const attachSdmClick = (el) => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openGalleryModal(modalSdm);
+        });
+    };
+    attachSdmClick(projectCardSdm);
+    projectCardSdm.querySelectorAll('.action-pill, .project-thumb-box, .project-img-overlay, .project-heading').forEach(attachSdmClick);
 }
 
 if (projectCardLpmi && modalLpmi) {
-    projectCardLpmi.addEventListener('click', (e) => {
-        e.preventDefault();
-        openGalleryModal(modalLpmi);
-    });
+    const attachLpmiClick = (el) => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openGalleryModal(modalLpmi);
+        });
+    };
+    attachLpmiClick(projectCardLpmi);
+    projectCardLpmi.querySelectorAll('.action-pill, .project-thumb-box, .project-img-overlay, .project-heading').forEach(attachLpmiClick);
 }
 
 allCloseModalBtns.forEach(btn => {

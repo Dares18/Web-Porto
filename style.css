@@ -1487,7 +1487,7 @@ body.light-theme .project-summary {
     background: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    z-index: 10000;
+    z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1498,8 +1498,9 @@ body.light-theme .project-summary {
 }
 
 .project-modal-backdrop.active {
-    opacity: 1;
-    pointer-events: auto;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 .project-modal-glass {
@@ -1941,7 +1942,7 @@ body.light-theme .dock-item::after {
     background: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
-    z-index: 99999;
+    z-index: 1000000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1951,8 +1952,9 @@ body.light-theme .dock-item::after {
 }
 
 .lightbox-backdrop.active {
-    opacity: 1;
-    pointer-events: auto;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 .lightbox-container {
@@ -2045,7 +2047,7 @@ body.light-theme .lightbox-desc-text {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 100000;
+    z-index: 1000001;
 }
 
 .lightbox-btn:hover {
