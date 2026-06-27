@@ -14,24 +14,36 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     // Utility: wait ms
     const wait = ms => new Promise(r => setTimeout(r, ms));
 
-    // ========== WEB AUDIO API — Futuristic SFX Engine ==========
+    // ========== WEB AUDIO API — CINEMATIC BLOCKBUSTER SFX ENGINE ==========
     let audioCtx = null;
     let sfxEnabled = false;
+    let masterCompressor = null;
 
     function initAudio() {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            // Explicitly resume — inside a click handler this is guaranteed to work
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+            // Master compressor for punchier, louder output without clipping
+            masterCompressor = audioCtx.createDynamicsCompressor();
+            masterCompressor.threshold.setValueAtTime(-24, audioCtx.currentTime);
+            masterCompressor.knee.setValueAtTime(6, audioCtx.currentTime);
+            masterCompressor.ratio.setValueAtTime(8, audioCtx.currentTime);
+            masterCompressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
+            masterCompressor.release.setValueAtTime(0.15, audioCtx.currentTime);
+            masterCompressor.connect(audioCtx.destination);
             sfxEnabled = true;
         } catch (e) {
             sfxEnabled = false;
         }
     }
 
-    // Create filtered white noise burst (used for whoosh/glitch textures)
+    function getMaster() {
+        return masterCompressor || audioCtx.destination;
+    }
+
+    // Create noise buffer for impacts and textures
     function createNoiseBuffer(duration) {
         if (!audioCtx) return null;
         const sampleRate = audioCtx.sampleRate;
@@ -44,170 +56,411 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         return buffer;
     }
 
-    // SFX: Deep resonant tone + shimmer — Logo Appear
+    // Create a waveshaper distortion curve for gritty bass
+    function makeDistortionCurve(amount) {
+        const samples = 44100;
+        const curve = new Float32Array(samples);
+        const deg = Math.PI / 180;
+        for (let i = 0; i < samples; i++) {
+            const x = (i * 2) / samples - 1;
+            curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+        }
+        return curve;
+    }
+
+    // Utility: create a simple convolution-style reverb tail
+    function createReverbBuffer(duration, decay) {
+        if (!audioCtx) return null;
+        const sampleRate = audioCtx.sampleRate;
+        const length = sampleRate * duration;
+        const buffer = audioCtx.createBuffer(2, length, sampleRate);
+        for (let ch = 0; ch < 2; ch++) {
+            const data = buffer.getChannelData(ch);
+            for (let i = 0; i < length; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+            }
+        }
+        return buffer;
+    }
+
+    // ───────────────────────────────────────────────
+    // SFX: INCEPTION "BWAAAAM" — Logo Appear
+    // Deep sub-bass impact + brass-like mid harmonics + reverb tail
+    // ───────────────────────────────────────────────
     function sfxLogoAppear() {
         if (!sfxEnabled || !audioCtx) return;
         const now = audioCtx.currentTime;
+        const master = getMaster();
 
-        // Sub bass tone
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(55, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.8);
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.15, now + 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.9);
+        // Layer 1: Massive sub-bass hit (the "BWAAAAM" core)
+        const subOsc = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(38, now);
+        subOsc.frequency.exponentialRampToValueAtTime(28, now + 2.0);
+        subGain.gain.setValueAtTime(0, now);
+        subGain.gain.linearRampToValueAtTime(0.45, now + 0.015);  // Hard transient
+        subGain.gain.setValueAtTime(0.4, now + 0.05);
+        subGain.gain.exponentialRampToValueAtTime(0.12, now + 0.8);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+        subOsc.connect(subGain).connect(master);
+        subOsc.start(now);
+        subOsc.stop(now + 2.3);
 
-        // Shimmer harmonic
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(880, now);
-        osc2.frequency.exponentialRampToValueAtTime(440, now + 0.6);
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(1200, now);
-        filter.Q.setValueAtTime(5, now);
-        gain2.gain.setValueAtTime(0, now);
-        gain2.gain.linearRampToValueAtTime(0.04, now + 0.05);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-        osc2.connect(filter).connect(gain2).connect(audioCtx.destination);
-        osc2.start(now);
-        osc2.stop(now + 0.7);
+        // Layer 2: Low brass-like tone with distortion (the "honk")
+        const brassOsc = audioCtx.createOscillator();
+        const brassGain = audioCtx.createGain();
+        const brassDistortion = audioCtx.createWaveShaper();
+        const brassFilter = audioCtx.createBiquadFilter();
+        brassOsc.type = 'sawtooth';
+        brassOsc.frequency.setValueAtTime(75, now);
+        brassOsc.frequency.exponentialRampToValueAtTime(55, now + 1.5);
+        brassDistortion.curve = makeDistortionCurve(80);
+        brassDistortion.oversample = '4x';
+        brassFilter.type = 'lowpass';
+        brassFilter.frequency.setValueAtTime(400, now);
+        brassFilter.frequency.exponentialRampToValueAtTime(120, now + 1.5);
+        brassFilter.Q.setValueAtTime(2, now);
+        brassGain.gain.setValueAtTime(0, now);
+        brassGain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+        brassGain.gain.exponentialRampToValueAtTime(0.06, now + 0.6);
+        brassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+        brassOsc.connect(brassDistortion).connect(brassFilter).connect(brassGain).connect(master);
+        brassOsc.start(now);
+        brassOsc.stop(now + 1.9);
+
+        // Layer 3: Mid harmonic for "body" (detuned pair for width)
+        [0, 7].forEach(detuneCents => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 1.2);
+            osc.detune.setValueAtTime(detuneCents, now);
+            g.gain.setValueAtTime(0, now);
+            g.gain.linearRampToValueAtTime(0.08, now + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+            osc.connect(g).connect(master);
+            osc.start(now);
+            osc.stop(now + 1.5);
+        });
+
+        // Layer 4: Impact noise transient (the "crack" at the start)
+        const impactNoise = createNoiseBuffer(0.15);
+        if (impactNoise) {
+            const nSrc = audioCtx.createBufferSource();
+            const nGain = audioCtx.createGain();
+            const nFilter = audioCtx.createBiquadFilter();
+            nSrc.buffer = impactNoise;
+            nFilter.type = 'bandpass';
+            nFilter.frequency.setValueAtTime(800, now);
+            nFilter.Q.setValueAtTime(1.5, now);
+            nGain.gain.setValueAtTime(0.35, now);
+            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            nSrc.connect(nFilter).connect(nGain).connect(master);
+            nSrc.start(now);
+            nSrc.stop(now + 0.15);
+        }
+
+        // Layer 5: Reverb tail for epic spaciousness
+        const reverbBuf = createReverbBuffer(2.5, 2.5);
+        if (reverbBuf) {
+            const convolver = audioCtx.createConvolver();
+            convolver.buffer = reverbBuf;
+            const reverbGain = audioCtx.createGain();
+            reverbGain.gain.setValueAtTime(0.12, now);
+
+            // Feed a short burst into the reverb
+            const burstOsc = audioCtx.createOscillator();
+            const burstGain = audioCtx.createGain();
+            burstOsc.type = 'sine';
+            burstOsc.frequency.setValueAtTime(60, now);
+            burstGain.gain.setValueAtTime(0.3, now);
+            burstGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            burstOsc.connect(burstGain).connect(convolver).connect(reverbGain).connect(master);
+            burstOsc.start(now);
+            burstOsc.stop(now + 0.1);
+        }
     }
 
-    // SFX: Digital whoosh — Text lines appear
+    // ───────────────────────────────────────────────
+    // SFX: Dramatic Impact Hit — Text Reveal
+    // Metallic slam + sub-bass thump + cinematic whoosh
+    // ───────────────────────────────────────────────
     function sfxTextReveal(pitchOffset) {
         if (!sfxEnabled || !audioCtx) return;
         const now = audioCtx.currentTime;
-        const basePitch = 300 + (pitchOffset || 0) * 80;
+        const master = getMaster();
+        const idx = pitchOffset || 0;
+        // Each successive hit drops slightly in pitch for dramatic descent
+        const baseTone = 65 - idx * 8;
 
-        // Filtered noise whoosh
-        const noiseBuffer = createNoiseBuffer(0.35);
+        // Layer 1: Sub-bass thump
+        const subOsc = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        subOsc.type = 'sine';
+        subOsc.frequency.setValueAtTime(baseTone, now);
+        subOsc.frequency.exponentialRampToValueAtTime(baseTone * 0.6, now + 0.6);
+        subGain.gain.setValueAtTime(0, now);
+        subGain.gain.linearRampToValueAtTime(0.3, now + 0.01);
+        subGain.gain.exponentialRampToValueAtTime(0.08, now + 0.25);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        subOsc.connect(subGain).connect(master);
+        subOsc.start(now);
+        subOsc.stop(now + 0.9);
+
+        // Layer 2: Metallic impact (distorted mid-range)
+        const metalOsc = audioCtx.createOscillator();
+        const metalGain = audioCtx.createGain();
+        const metalDist = audioCtx.createWaveShaper();
+        const metalFilter = audioCtx.createBiquadFilter();
+        metalOsc.type = 'square';
+        metalOsc.frequency.setValueAtTime(200 - idx * 20, now);
+        metalOsc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+        metalDist.curve = makeDistortionCurve(50);
+        metalFilter.type = 'bandpass';
+        metalFilter.frequency.setValueAtTime(500, now);
+        metalFilter.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+        metalFilter.Q.setValueAtTime(3, now);
+        metalGain.gain.setValueAtTime(0, now);
+        metalGain.gain.linearRampToValueAtTime(0.12, now + 0.005);
+        metalGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        metalOsc.connect(metalDist).connect(metalFilter).connect(metalGain).connect(master);
+        metalOsc.start(now);
+        metalOsc.stop(now + 0.45);
+
+        // Layer 3: Impact noise burst
+        const noiseBuffer = createNoiseBuffer(0.25);
         if (noiseBuffer) {
             const noise = audioCtx.createBufferSource();
-            const noiseGain = audioCtx.createGain();
-            const noiseFilter = audioCtx.createBiquadFilter();
+            const nGain = audioCtx.createGain();
+            const nLPF = audioCtx.createBiquadFilter();
             noise.buffer = noiseBuffer;
-            noiseFilter.type = 'bandpass';
-            noiseFilter.frequency.setValueAtTime(basePitch, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(basePitch * 4, now + 0.15);
-            noiseFilter.frequency.exponentialRampToValueAtTime(basePitch * 0.5, now + 0.35);
-            noiseFilter.Q.setValueAtTime(2, now);
-            noiseGain.gain.setValueAtTime(0, now);
-            noiseGain.gain.linearRampToValueAtTime(0.07, now + 0.03);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-            noise.connect(noiseFilter).connect(noiseGain).connect(audioCtx.destination);
+            nLPF.type = 'lowpass';
+            nLPF.frequency.setValueAtTime(2000, now);
+            nLPF.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+            nGain.gain.setValueAtTime(0.2, now);
+            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            noise.connect(nLPF).connect(nGain).connect(master);
             noise.start(now);
-            noise.stop(now + 0.35);
+            noise.stop(now + 0.25);
         }
 
-        // Quick tonal blip
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(basePitch * 2, now);
-        osc.frequency.exponentialRampToValueAtTime(basePitch, now + 0.12);
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.05, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.2);
+        // Layer 4: Short cinematic "whoosh" tail
+        const whooshNoise = createNoiseBuffer(0.4);
+        if (whooshNoise) {
+            const whoosh = audioCtx.createBufferSource();
+            const wGain = audioCtx.createGain();
+            const wBPF = audioCtx.createBiquadFilter();
+            whoosh.buffer = whooshNoise;
+            wBPF.type = 'bandpass';
+            wBPF.frequency.setValueAtTime(600, now);
+            wBPF.frequency.exponentialRampToValueAtTime(200, now + 0.35);
+            wBPF.Q.setValueAtTime(1.5, now);
+            wGain.gain.setValueAtTime(0, now + 0.02);
+            wGain.gain.linearRampToValueAtTime(0.06, now + 0.06);
+            wGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            whoosh.connect(wBPF).connect(wGain).connect(master);
+            whoosh.start(now);
+            whoosh.stop(now + 0.4);
+        }
     }
 
-    // SFX: Glitch burst — Marquee lines appear
+    // ───────────────────────────────────────────────
+    // SFX: Thunderous Percussion Impact — Marquee Reveal
+    // Deep percussion + rumbling bass + tonal stab
+    // ───────────────────────────────────────────────
     function sfxMarqueeReveal(index) {
         if (!sfxEnabled || !audioCtx) return;
         const now = audioCtx.currentTime;
-        const basePitch = 150 + index * 50;
+        const master = getMaster();
+        const basePitch = 50 - index * 5;
 
-        // Distorted square wave burst
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const distortion = audioCtx.createWaveShaperFunction
-            ? audioCtx.createWaveShaper() : null;
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(basePitch, now);
-        osc.frequency.setValueAtTime(basePitch * 1.5, now + 0.04);
-        osc.frequency.setValueAtTime(basePitch * 0.8, now + 0.08);
-        osc.frequency.exponentialRampToValueAtTime(basePitch * 2, now + 0.18);
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.04, now + 0.01);
-        gain.gain.setValueAtTime(0.03, now + 0.05);
-        gain.gain.linearRampToValueAtTime(0.05, now + 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.connect(gain).connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.25);
+        // Layer 1: Deep percussion hit (kick-drum style)
+        const kickOsc = audioCtx.createOscillator();
+        const kickGain = audioCtx.createGain();
+        kickOsc.type = 'sine';
+        kickOsc.frequency.setValueAtTime(120, now);
+        kickOsc.frequency.exponentialRampToValueAtTime(basePitch, now + 0.08);
+        kickGain.gain.setValueAtTime(0, now);
+        kickGain.gain.linearRampToValueAtTime(0.35, now + 0.005);
+        kickGain.gain.exponentialRampToValueAtTime(0.1, now + 0.15);
+        kickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        kickOsc.connect(kickGain).connect(master);
+        kickOsc.start(now);
+        kickOsc.stop(now + 0.65);
 
-        // Noise crackle overlay
-        const noiseBuffer = createNoiseBuffer(0.2);
-        if (noiseBuffer) {
-            const noise = audioCtx.createBufferSource();
-            const nGain = audioCtx.createGain();
-            const hpf = audioCtx.createBiquadFilter();
-            noise.buffer = noiseBuffer;
-            hpf.type = 'highpass';
-            hpf.frequency.setValueAtTime(3000, now);
-            nGain.gain.setValueAtTime(0, now);
-            nGain.gain.linearRampToValueAtTime(0.06, now + 0.02);
-            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-            noise.connect(hpf).connect(nGain).connect(audioCtx.destination);
-            noise.start(now);
-            noise.stop(now + 0.2);
+        // Layer 2: Distorted bass stab
+        const stabOsc = audioCtx.createOscillator();
+        const stabGain = audioCtx.createGain();
+        const stabDist = audioCtx.createWaveShaper();
+        const stabLPF = audioCtx.createBiquadFilter();
+        stabOsc.type = 'sawtooth';
+        stabOsc.frequency.setValueAtTime(basePitch * 2, now);
+        stabOsc.frequency.exponentialRampToValueAtTime(basePitch, now + 0.2);
+        stabDist.curve = makeDistortionCurve(60);
+        stabDist.oversample = '4x';
+        stabLPF.type = 'lowpass';
+        stabLPF.frequency.setValueAtTime(350, now);
+        stabLPF.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+        stabGain.gain.setValueAtTime(0, now);
+        stabGain.gain.linearRampToValueAtTime(0.14, now + 0.01);
+        stabGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        stabOsc.connect(stabDist).connect(stabLPF).connect(stabGain).connect(master);
+        stabOsc.start(now);
+        stabOsc.stop(now + 0.4);
+
+        // Layer 3: Rumbling sub-bass tail
+        const rumbleNoise = createNoiseBuffer(0.5);
+        if (rumbleNoise) {
+            const rumble = audioCtx.createBufferSource();
+            const rGain = audioCtx.createGain();
+            const rLPF = audioCtx.createBiquadFilter();
+            rumble.buffer = rumbleNoise;
+            rLPF.type = 'lowpass';
+            rLPF.frequency.setValueAtTime(120, now);
+            rGain.gain.setValueAtTime(0, now);
+            rGain.gain.linearRampToValueAtTime(0.15, now + 0.02);
+            rGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            rumble.connect(rLPF).connect(rGain).connect(master);
+            rumble.start(now);
+            rumble.stop(now + 0.5);
         }
+
+        // Layer 4: Short metallic click for definition
+        const clickOsc = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        clickOsc.type = 'triangle';
+        clickOsc.frequency.setValueAtTime(2500, now);
+        clickOsc.frequency.exponentialRampToValueAtTime(800, now + 0.025);
+        clickGain.gain.setValueAtTime(0.12, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        clickOsc.connect(clickGain).connect(master);
+        clickOsc.start(now);
+        clickOsc.stop(now + 0.05);
     }
 
-    // SFX: Cinematic sweep — Curtain exit
+    // ───────────────────────────────────────────────
+    // SFX: Epic Cinematic Riser → Bass Drop — Curtain Exit
+    // Tension riser sweep + massive bass drop + reverb wash
+    // ───────────────────────────────────────────────
     function sfxCurtainExit() {
         if (!sfxEnabled || !audioCtx) return;
         const now = audioCtx.currentTime;
+        const master = getMaster();
 
-        // Rising sweep
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const filter = audioCtx.createBiquadFilter();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(80, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.6);
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(200, now);
-        filter.frequency.exponentialRampToValueAtTime(4000, now + 0.5);
-        filter.frequency.exponentialRampToValueAtTime(200, now + 0.8);
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.06, now + 0.1);
-        gain.gain.setValueAtTime(0.06, now + 0.4);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-        osc.connect(filter).connect(gain).connect(audioCtx.destination);
-        osc.start(now);
-        osc.stop(now + 0.8);
+        // Phase 1: Tension riser (0.0s – 0.5s)
+        // Rising filtered noise
+        const riserNoise = createNoiseBuffer(0.55);
+        if (riserNoise) {
+            const riser = audioCtx.createBufferSource();
+            const rGain = audioCtx.createGain();
+            const rBPF = audioCtx.createBiquadFilter();
+            riser.buffer = riserNoise;
+            rBPF.type = 'bandpass';
+            rBPF.frequency.setValueAtTime(200, now);
+            rBPF.frequency.exponentialRampToValueAtTime(4000, now + 0.45);
+            rBPF.Q.setValueAtTime(3, now);
+            rBPF.Q.linearRampToValueAtTime(8, now + 0.45);
+            rGain.gain.setValueAtTime(0.01, now);
+            rGain.gain.linearRampToValueAtTime(0.18, now + 0.4);
+            rGain.gain.linearRampToValueAtTime(0, now + 0.52);
+            riser.connect(rBPF).connect(rGain).connect(master);
+            riser.start(now);
+            riser.stop(now + 0.55);
+        }
 
-        // Breath-like noise sweep
-        const noiseBuffer = createNoiseBuffer(0.7);
-        if (noiseBuffer) {
-            const noise = audioCtx.createBufferSource();
-            const nGain = audioCtx.createGain();
-            const bpf = audioCtx.createBiquadFilter();
-            noise.buffer = noiseBuffer;
-            bpf.type = 'bandpass';
-            bpf.frequency.setValueAtTime(500, now);
-            bpf.frequency.exponentialRampToValueAtTime(3000, now + 0.4);
-            bpf.frequency.exponentialRampToValueAtTime(300, now + 0.7);
-            bpf.Q.setValueAtTime(1, now);
-            nGain.gain.setValueAtTime(0, now);
-            nGain.gain.linearRampToValueAtTime(0.08, now + 0.15);
-            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-            noise.connect(bpf).connect(nGain).connect(audioCtx.destination);
-            noise.start(now);
-            noise.stop(now + 0.7);
+        // Rising tonal sweep
+        const sweepOsc = audioCtx.createOscillator();
+        const sweepGain = audioCtx.createGain();
+        const sweepFilter = audioCtx.createBiquadFilter();
+        sweepOsc.type = 'sawtooth';
+        sweepOsc.frequency.setValueAtTime(100, now);
+        sweepOsc.frequency.exponentialRampToValueAtTime(1200, now + 0.48);
+        sweepFilter.type = 'lowpass';
+        sweepFilter.frequency.setValueAtTime(300, now);
+        sweepFilter.frequency.exponentialRampToValueAtTime(5000, now + 0.45);
+        sweepGain.gain.setValueAtTime(0, now);
+        sweepGain.gain.linearRampToValueAtTime(0.08, now + 0.15);
+        sweepGain.gain.linearRampToValueAtTime(0.12, now + 0.42);
+        sweepGain.gain.linearRampToValueAtTime(0, now + 0.5);
+        sweepOsc.connect(sweepFilter).connect(sweepGain).connect(master);
+        sweepOsc.start(now);
+        sweepOsc.stop(now + 0.52);
+
+        // Phase 2: MASSIVE BASS DROP at 0.5s
+        const dropTime = now + 0.5;
+
+        // Drop: Sub-bass slam
+        const dropSub = audioCtx.createOscillator();
+        const dropSubGain = audioCtx.createGain();
+        dropSub.type = 'sine';
+        dropSub.frequency.setValueAtTime(45, dropTime);
+        dropSub.frequency.exponentialRampToValueAtTime(25, dropTime + 1.5);
+        dropSubGain.gain.setValueAtTime(0, dropTime);
+        dropSubGain.gain.linearRampToValueAtTime(0.4, dropTime + 0.01);
+        dropSubGain.gain.exponentialRampToValueAtTime(0.1, dropTime + 0.5);
+        dropSubGain.gain.exponentialRampToValueAtTime(0.001, dropTime + 1.8);
+        dropSub.connect(dropSubGain).connect(master);
+        dropSub.start(dropTime);
+        dropSub.stop(dropTime + 1.9);
+
+        // Drop: Distorted mid-bass
+        const dropMid = audioCtx.createOscillator();
+        const dropMidGain = audioCtx.createGain();
+        const dropMidDist = audioCtx.createWaveShaper();
+        const dropMidLPF = audioCtx.createBiquadFilter();
+        dropMid.type = 'sawtooth';
+        dropMid.frequency.setValueAtTime(90, dropTime);
+        dropMid.frequency.exponentialRampToValueAtTime(50, dropTime + 1.0);
+        dropMidDist.curve = makeDistortionCurve(70);
+        dropMidDist.oversample = '4x';
+        dropMidLPF.type = 'lowpass';
+        dropMidLPF.frequency.setValueAtTime(500, dropTime);
+        dropMidLPF.frequency.exponentialRampToValueAtTime(100, dropTime + 1.0);
+        dropMidGain.gain.setValueAtTime(0, dropTime);
+        dropMidGain.gain.linearRampToValueAtTime(0.15, dropTime + 0.015);
+        dropMidGain.gain.exponentialRampToValueAtTime(0.001, dropTime + 1.2);
+        dropMid.connect(dropMidDist).connect(dropMidLPF).connect(dropMidGain).connect(master);
+        dropMid.start(dropTime);
+        dropMid.stop(dropTime + 1.3);
+
+        // Drop: Impact noise crack
+        const dropNoise = createNoiseBuffer(0.2);
+        if (dropNoise) {
+            const dn = audioCtx.createBufferSource();
+            const dnGain = audioCtx.createGain();
+            const dnBPF = audioCtx.createBiquadFilter();
+            dn.buffer = dropNoise;
+            dnBPF.type = 'bandpass';
+            dnBPF.frequency.setValueAtTime(1000, dropTime);
+            dnBPF.Q.setValueAtTime(1, dropTime);
+            dnGain.gain.setValueAtTime(0.25, dropTime);
+            dnGain.gain.exponentialRampToValueAtTime(0.001, dropTime + 0.15);
+            dn.connect(dnBPF).connect(dnGain).connect(master);
+            dn.start(dropTime);
+            dn.stop(dropTime + 0.2);
+        }
+
+        // Drop: Reverb wash
+        const reverbBuf = createReverbBuffer(2.0, 2.0);
+        if (reverbBuf) {
+            const convolver = audioCtx.createConvolver();
+            convolver.buffer = reverbBuf;
+            const reverbGain = audioCtx.createGain();
+            reverbGain.gain.setValueAtTime(0.1, dropTime);
+            const burstOsc = audioCtx.createOscillator();
+            const burstGain = audioCtx.createGain();
+            burstOsc.type = 'sine';
+            burstOsc.frequency.setValueAtTime(50, dropTime);
+            burstGain.gain.setValueAtTime(0.25, dropTime);
+            burstGain.gain.exponentialRampToValueAtTime(0.001, dropTime + 0.06);
+            burstOsc.connect(burstGain).connect(convolver).connect(reverbGain).connect(master);
+            burstOsc.start(dropTime);
+            burstOsc.stop(dropTime + 0.08);
         }
     }
-    // ========== END SFX ENGINE ==========
+    // ========== END CINEMATIC SFX ENGINE ==========
 
     // Utility: show a line with clip-path reveal
     function showLine(el) {
