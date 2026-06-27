@@ -14,11 +14,30 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     // Utility: wait ms
     const wait = ms => new Promise(r => setTimeout(r, ms));
 
-    // ========== WEB AUDIO API — PERCUSSIVE STOMP AUDIO ENGINE ==========
+    // ========== AUDIO ENGINE — CINEMATIC SOUND EFFECTS ==========
     let audioCtx = null;
     let sfxEnabled = false;
-    let masterCompressor = null;
     let masterGain = null;
+
+    const sfxUrls = {
+        bgm: 'Assets/SoundEffects/cinematic-percussion-kick.mp3',
+        whoosh: 'Assets/SoundEffects/whoosh-cinematic.mp3',
+        bass: 'Assets/SoundEffects/distortion-bass-brvhrtz.mp3',
+        boom: 'Assets/SoundEffects/cinematic-boom.mp3'
+    };
+
+    const sfxRawBuffers = {};
+    const sfxBuffers = {};
+    let bgmSource = null;
+    let bgmGainNode = null;
+
+    // Immediately start downloading audio files into memory
+    Object.entries(sfxUrls).forEach(([key, url]) => {
+        fetch(url)
+            .then(res => res.arrayBuffer())
+            .then(buf => { sfxRawBuffers[key] = buf; })
+            .catch(err => console.error("Error fetching sfx:", key, err));
+    });
 
     function initAudio() {
         try {
@@ -28,16 +47,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             }
             masterGain = audioCtx.createGain();
             masterGain.gain.setValueAtTime(0.95, audioCtx.currentTime);
-
-            // Master compressor for heavy percussive punch
-            masterCompressor = audioCtx.createDynamicsCompressor();
-            masterCompressor.threshold.setValueAtTime(-16, audioCtx.currentTime);
-            masterCompressor.knee.setValueAtTime(3, audioCtx.currentTime);
-            masterCompressor.ratio.setValueAtTime(12, audioCtx.currentTime);
-            masterCompressor.attack.setValueAtTime(0.001, audioCtx.currentTime);
-            masterCompressor.release.setValueAtTime(0.08, audioCtx.currentTime);
-
-            masterGain.connect(masterCompressor).connect(audioCtx.destination);
+            masterGain.connect(audioCtx.destination);
             sfxEnabled = true;
         } catch (e) {
             sfxEnabled = false;
@@ -45,358 +55,91 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     }
 
     function getMaster() {
-        return masterGain || audioCtx.destination;
+        return masterGain || (audioCtx ? audioCtx.destination : null);
     }
 
-    function createNoiseBuffer(duration) {
-        if (!audioCtx) return null;
-        const sr = audioCtx.sampleRate;
-        const len = sr * duration;
-        const buf = audioCtx.createBuffer(1, len, sr);
-        const d = buf.getChannelData(0);
-        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-        return buf;
-    }
-
-    function createReverbBuffer(duration, decay) {
-        if (!audioCtx) return null;
-        const sr = audioCtx.sampleRate;
-        const len = sr * duration;
-        const buf = audioCtx.createBuffer(2, len, sr);
-        for (let ch = 0; ch < 2; ch++) {
-            const d = buf.getChannelData(ch);
-            for (let i = 0; i < len; i++) {
-                d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    async function decodeAudio(key) {
+        if (!audioCtx || !sfxEnabled) return null;
+        if (sfxBuffers[key]) return sfxBuffers[key];
+        try {
+            let rawBuf = sfxRawBuffers[key];
+            if (!rawBuf) {
+                const res = await fetch(sfxUrls[key]);
+                rawBuf = await res.arrayBuffer();
             }
+            if (rawBuf) {
+                sfxBuffers[key] = await audioCtx.decodeAudioData(rawBuf.slice(0));
+                return sfxBuffers[key];
+            }
+        } catch (e) {
+            console.error("Failed decoding sfx:", key, e);
         }
-        return buf;
+        return null;
     }
 
-    function makeDistCurve(amount) {
-        const n = 44100;
-        const curve = new Float32Array(n);
-        const deg = Math.PI / 180;
-        for (let i = 0; i < n; i++) {
-            const x = (i * 2) / n - 1;
-            curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
-        }
-        return curve;
-    }
-
-    // ─────────────────────────────────────────────────────
-    // 🥁 TICK: Crisp Rimshot / Woodblock Snap
-    // ─────────────────────────────────────────────────────
-    function sfxTick() {
+    function playSfx(key, volume = 1.0) {
         if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(1800, now);
-        osc.frequency.exponentialRampToValueAtTime(300, now + 0.035);
-        g.gain.setValueAtTime(0.6, now);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-        osc.connect(g).connect(out);
-        osc.start(now);
-        osc.stop(now + 0.05);
-
-        const nBuf = createNoiseBuffer(0.04);
-        if (nBuf) {
-            const n = audioCtx.createBufferSource();
-            const ng = audioCtx.createGain();
-            const hpf = audioCtx.createBiquadFilter();
-            n.buffer = nBuf;
-            hpf.type = 'highpass';
-            hpf.frequency.setValueAtTime(3000, now);
-            ng.gain.setValueAtTime(0.4, now);
-            ng.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-            n.connect(hpf).connect(ng).connect(out);
-            n.start(now);
-            n.stop(now + 0.04);
+        const buf = sfxBuffers[key];
+        if (buf) {
+            playBuffer(buf, volume);
+        } else {
+            decodeAudio(key).then(decoded => {
+                if (decoded) playBuffer(decoded, volume);
+            });
         }
     }
 
-    // ─────────────────────────────────────────────────────
-    // 🥁 STOMP: Heavy 808 Sub Thud + Metallic Slam
-    // ─────────────────────────────────────────────────────
-    function sfxStomp() {
-        if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        const sub = audioCtx.createOscillator();
-        const subG = audioCtx.createGain();
-        sub.type = 'sine';
-        sub.frequency.setValueAtTime(180, now);
-        sub.frequency.exponentialRampToValueAtTime(32, now + 0.12);
-        sub.frequency.exponentialRampToValueAtTime(18, now + 0.65);
-        subG.gain.setValueAtTime(0, now);
-        subG.gain.linearRampToValueAtTime(0.85, now + 0.005);
-        subG.gain.exponentialRampToValueAtTime(0.18, now + 0.2);
-        subG.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
-        sub.connect(subG).connect(out);
-        sub.start(now);
-        sub.stop(now + 0.7);
-
-        const metal = audioCtx.createOscillator();
-        const metalG = audioCtx.createGain();
-        const dist = audioCtx.createWaveShaper();
-        const lpf = audioCtx.createBiquadFilter();
-        metal.type = 'square';
-        metal.frequency.setValueAtTime(300, now);
-        metal.frequency.exponentialRampToValueAtTime(60, now + 0.15);
-        dist.curve = makeDistCurve(70);
-        lpf.type = 'lowpass';
-        lpf.frequency.setValueAtTime(800, now);
-        lpf.frequency.exponentialRampToValueAtTime(100, now + 0.2);
-        metalG.gain.setValueAtTime(0, now);
-        metalG.gain.linearRampToValueAtTime(0.35, now + 0.005);
-        metalG.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        metal.connect(dist).connect(lpf).connect(metalG).connect(out);
-        metal.start(now);
-        metal.stop(now + 0.3);
-    }
-
-    // ─────────────────────────────────────────────────────
-    // 🥁 SNARE: Acoustic Snare Crack
-    // ─────────────────────────────────────────────────────
-    function sfxSnare() {
-        if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        const tone = audioCtx.createOscillator();
-        const toneG = audioCtx.createGain();
-        tone.type = 'triangle';
-        tone.frequency.setValueAtTime(250, now);
-        tone.frequency.exponentialRampToValueAtTime(100, now + 0.08);
-        toneG.gain.setValueAtTime(0.5, now);
-        toneG.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-        tone.connect(toneG).connect(out);
-        tone.start(now);
-        tone.stop(now + 0.12);
-
-        const nBuf = createNoiseBuffer(0.18);
-        if (nBuf) {
-            const n = audioCtx.createBufferSource();
-            const ng = audioCtx.createGain();
-            const bpf = audioCtx.createBiquadFilter();
-            n.buffer = nBuf;
-            bpf.type = 'bandpass';
-            bpf.frequency.setValueAtTime(1500, now);
-            bpf.Q.setValueAtTime(1.2, now);
-            ng.gain.setValueAtTime(0.6, now);
-            ng.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-            n.connect(bpf).connect(ng).connect(out);
-            n.start(now);
-            n.stop(now + 0.18);
+    function playBuffer(buf, volume = 1.0) {
+        if (!audioCtx || audioCtx.state === 'closed') return null;
+        try {
+            const source = audioCtx.createBufferSource();
+            source.buffer = buf;
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            source.connect(gainNode).connect(getMaster());
+            source.start(0);
+            return source;
+        } catch (e) {
+            return null;
         }
     }
 
-    // ─────────────────────────────────────────────────────
-    // 💨 WHOOSH: High-Speed Air Sweep
-    // ─────────────────────────────────────────────────────
-    function sfxWhoosh() {
-        if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        const nBuf = createNoiseBuffer(0.22);
-        if (nBuf) {
-            const n = audioCtx.createBufferSource();
-            const ng = audioCtx.createGain();
-            const bpf = audioCtx.createBiquadFilter();
-            n.buffer = nBuf;
-            bpf.type = 'bandpass';
-            bpf.frequency.setValueAtTime(400, now);
-            bpf.frequency.exponentialRampToValueAtTime(3000, now + 0.1);
-            bpf.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-            bpf.Q.setValueAtTime(2, now);
-            ng.gain.setValueAtTime(0.01, now);
-            ng.gain.linearRampToValueAtTime(0.25, now + 0.1);
-            ng.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-            n.connect(bpf).connect(ng).connect(out);
-            n.start(now);
-            n.stop(now + 0.22);
-        }
-    }
-
-    // ─────────────────────────────────────────────────────
-    // 💥 MEGA DROP: Final Welcome Shockwave & Curtain Open
-    // ─────────────────────────────────────────────────────
-    function sfxMegaDrop() {
-        if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        // Riser (0s -> 0.55s)
-        const riserBuf = createNoiseBuffer(0.6);
-        if (riserBuf) {
-            const riser = audioCtx.createBufferSource();
-            const rG = audioCtx.createGain();
-            const rBPF = audioCtx.createBiquadFilter();
-            riser.buffer = riserBuf;
-            rBPF.type = 'bandpass';
-            rBPF.frequency.setValueAtTime(200, now);
-            rBPF.frequency.exponentialRampToValueAtTime(6000, now + 0.52);
-            rBPF.Q.setValueAtTime(2, now);
-            rBPF.Q.linearRampToValueAtTime(10, now + 0.52);
-            rG.gain.setValueAtTime(0.01, now);
-            rG.gain.exponentialRampToValueAtTime(0.35, now + 0.5);
-            rG.gain.linearRampToValueAtTime(0, now + 0.58);
-            riser.connect(rBPF).connect(rG).connect(out);
-            riser.start(now);
-            riser.stop(now + 0.6);
-        }
-
-        // Drop at 0.55s
-        const drop = now + 0.55;
-        const sub = audioCtx.createOscillator();
-        const subG = audioCtx.createGain();
-        sub.type = 'sine';
-        sub.frequency.setValueAtTime(220, drop);
-        sub.frequency.exponentialRampToValueAtTime(40, drop + 0.15);
-        sub.frequency.exponentialRampToValueAtTime(20, drop + 2.5);
-        subG.gain.setValueAtTime(0, drop);
-        subG.gain.linearRampToValueAtTime(0.85, drop + 0.006);
-        subG.gain.exponentialRampToValueAtTime(0.25, drop + 0.4);
-        subG.gain.exponentialRampToValueAtTime(0.001, drop + 2.8);
-        sub.connect(subG).connect(out);
-        sub.start(drop);
-        sub.stop(drop + 3.0);
-
-        const revBuf = createReverbBuffer(3.2, 1.8);
-        if (revBuf) {
-            const conv = audioCtx.createConvolver();
-            conv.buffer = revBuf;
-            const rG = audioCtx.createGain();
-            rG.gain.setValueAtTime(0.3, drop);
-            const burst = audioCtx.createOscillator();
-            const bG = audioCtx.createGain();
-            burst.type = 'sine';
-            burst.frequency.setValueAtTime(60, drop);
-            bG.gain.setValueAtTime(0.5, drop);
-            bG.gain.exponentialRampToValueAtTime(0.001, drop + 0.06);
-            burst.connect(bG).connect(conv).connect(rG).connect(out);
-            burst.start(drop);
-            burst.stop(drop + 0.08);
-        }
-    }
-
-    let bgmGain = null;
-    let bgmPulseInterval = null;
-    let activeDroneOsc = null;
-    let activeLfo = null;
-
-    // ─────────────────────────────────────────────────────
-    // 🎬 BLOCKBUSTER BGM: Dark Action Drone & Arpeggio Pulse
-    // ─────────────────────────────────────────────────────
     function startCinematicBGM() {
         if (!sfxEnabled || !audioCtx) return;
-        const now = audioCtx.currentTime;
-        const out = getMaster();
-
-        bgmGain = audioCtx.createGain();
-        bgmGain.gain.setValueAtTime(0.01, now);
-        bgmGain.gain.linearRampToValueAtTime(0.32, now + 1.2);
-        bgmGain.connect(out);
-
-        // 1. Deep Sub Drone (55 Hz)
-        const droneOsc = audioCtx.createOscillator();
-        const droneFilter = audioCtx.createBiquadFilter();
-        droneOsc.type = 'sawtooth';
-        droneOsc.frequency.setValueAtTime(55, now);
-        droneFilter.type = 'lowpass';
-        droneFilter.frequency.setValueAtTime(130, now);
-
-        const lfo = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-        lfo.frequency.setValueAtTime(0.5, now);
-        lfoGain.gain.setValueAtTime(45, now);
-        lfo.connect(droneFilter.frequency);
-        lfo.start(now);
-
-        droneOsc.connect(droneFilter).connect(bgmGain);
-        droneOsc.start(now);
-
-        activeDroneOsc = droneOsc;
-        activeLfo = lfo;
-
-        // 2. Action Trailer Driving Synth Pulse (16th notes at 125 BPM)
-        const notes = [110, 110, 130.81, 146.83, 110, 164.81, 146.83, 130.81];
-        let step = 0;
-
-        function playPulseNote() {
-            if (!audioCtx || audioCtx.state === 'closed' || !bgmGain) return;
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const filter = audioCtx.createBiquadFilter();
-            const g = audioCtx.createGain();
-
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(notes[step % notes.length], t);
-
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(700, t);
-            filter.frequency.exponentialRampToValueAtTime(140, t + 0.1);
-
-            g.gain.setValueAtTime(0.24, t);
-            g.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
-
-            osc.connect(filter).connect(g).connect(bgmGain);
-            osc.start(t);
-            osc.stop(t + 0.12);
-
-            step++;
+        const buf = sfxBuffers['bgm'];
+        if (!buf) {
+            decodeAudio('bgm').then(() => startCinematicBGM());
+            return;
         }
-
-        bgmPulseInterval = setInterval(playPulseNote, 120);
+        try {
+            bgmSource = audioCtx.createBufferSource();
+            bgmSource.buffer = buf;
+            bgmSource.loop = true;
+            bgmGainNode = audioCtx.createGain();
+            bgmGainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            bgmGainNode.gain.linearRampToValueAtTime(0.85, audioCtx.currentTime + 1.2);
+            bgmSource.connect(bgmGainNode).connect(getMaster());
+            bgmSource.start(0);
+        } catch (e) {}
     }
 
-    // ─────────────────────────────────────────────────────
-    // 🌌 PORTFOLIO REVEAL: Majestic Futuristic Shimmer Tail
-    // ─────────────────────────────────────────────────────
     function transitionBGMToPortfolio() {
-        if (!audioCtx || !bgmGain) return;
-        if (bgmPulseInterval) clearInterval(bgmPulseInterval);
-
+        if (!audioCtx || !bgmGainNode) return;
         const now = audioCtx.currentTime;
-        bgmGain.gain.setValueAtTime(bgmGain.gain.value, now);
-        bgmGain.gain.exponentialRampToValueAtTime(0.08, now + 0.6);
-        bgmGain.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
-
-        if (activeDroneOsc) { activeDroneOsc.stop(now + 3.1); activeDroneOsc = null; }
-        if (activeLfo) { activeLfo.stop(now + 3.1); activeLfo = null; }
-
-        const chordNotes = [220, 261.63, 329.63, 392.00, 523.25];
-        chordNotes.forEach((freq, idx) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            const pan = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now);
-
-            g.gain.setValueAtTime(0.01, now);
-            g.gain.linearRampToValueAtTime(0.06, now + 0.3);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
-
-            if (pan) {
-                pan.pan.setValueAtTime((idx - 2) * 0.3, now);
-                osc.connect(g).connect(pan).connect(getMaster());
-            } else {
-                osc.connect(g).connect(getMaster());
+        try {
+            bgmGainNode.gain.setValueAtTime(bgmGainNode.gain.value, now);
+            bgmGainNode.gain.exponentialRampToValueAtTime(0.05, now + 1.2);
+            bgmGainNode.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
+            if (bgmSource) {
+                setTimeout(() => {
+                    try { bgmSource.stop(); } catch (e) {}
+                }, 3100);
             }
-            osc.start(now);
-            osc.stop(now + 3.1);
-        });
+        } catch (e) {}
     }
-    // ========== END PERCUSSIVE STOMP AUDIO ENGINE ==========
 
     // ═══════════════════════════════════════════════════════════════════
-    // KINETIC TIMELINE ORCHESTRATOR — Rhythmic "Don't Blink" Fast Pacing
+    // KINETIC TIMELINE ORCHESTRATOR — Blockbuster Movie Trailer Sequence
     // ═══════════════════════════════════════════════════════════════════
     async function animate() {
         const words = Array.from(splash.querySelectorAll('.kinetic-word'));
@@ -405,80 +148,108 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         startCinematicBGM();
         await wait(300);
 
-        // Act 1: "DON'T BLINK." (Stomp)
-        words[0].classList.add('k-active');
-        sfxStomp();
-        await wait(550);
-        words[0].classList.add('k-out');
-        await wait(120);
+        // Act 1: "IN A DIGITAL WORLD..."
+        if (words[0]) {
+            words[0].classList.add('k-active');
+            playSfx('whoosh', 0.9);
+            await wait(650);
+            words[0].classList.add('k-out');
+            await wait(150);
+        }
 
-        // Act 2: "THIS IS" (Slide left)
-        words[1].classList.add('k-active');
-        sfxWhoosh();
-        sfxTick();
-        await wait(400);
-        words[1].classList.add('k-out');
-        await wait(100);
+        // Act 2: "WHERE DETAILS MATTER..."
+        if (words[1]) {
+            words[1].classList.add('k-active');
+            playSfx('whoosh', 0.9);
+            await wait(650);
+            words[1].classList.add('k-out');
+            await wait(150);
+        }
 
-        // Act 3: "DAFFA RESTU FADHILLAH" (Invert flash impact)
-        splash.classList.add('kinetic-inverted');
-        words[2].classList.add('k-active');
-        sfxStomp();
-        sfxSnare();
-        await wait(750);
-        splash.classList.remove('kinetic-inverted');
-        words[2].classList.add('k-out');
-        await wait(120);
+        // Act 3: "MEET THE CREATOR."
+        if (words[2]) {
+            words[2].classList.add('k-active');
+            playSfx('bass', 1.0);
+            await wait(750);
+            words[2].classList.add('k-out');
+            await wait(180);
+        }
 
-        // Act 4: "FRONT-END DEVELOPER" (Stomp)
-        words[3].classList.add('k-active');
-        sfxStomp();
-        await wait(480);
-        words[3].classList.add('k-out');
-        await wait(100);
+        // Act 4: "DAFFA RESTU FADHILLAH"
+        if (words[3]) {
+            splash.classList.add('kinetic-inverted');
+            words[3].classList.add('k-active');
+            playSfx('boom', 1.0);
+            playSfx('bass', 0.6);
+            await wait(900);
+            splash.classList.remove('kinetic-inverted');
+            words[3].classList.add('k-out');
+            await wait(180);
+        }
 
-        // Act 5: "& UI/UX DESIGNER" (Slide right)
-        words[4].classList.add('k-active');
-        sfxWhoosh();
-        sfxTick();
-        await wait(480);
-        words[4].classList.add('k-out');
-        await wait(100);
+        // Act 5: "FRONT-END DEVELOPER"
+        if (words[4]) {
+            words[4].classList.add('k-active');
+            playSfx('whoosh', 0.9);
+            await wait(600);
+            words[4].classList.add('k-out');
+            await wait(120);
+        }
 
-        // Act 6: "CRAFTING" (Zoom)
-        words[5].classList.add('k-active');
-        sfxTick();
-        await wait(350);
-        words[5].classList.add('k-out');
-        await wait(80);
+        // Act 6: "& UI/UX DESIGNER"
+        if (words[5]) {
+            words[5].classList.add('k-active');
+            playSfx('whoosh', 0.9);
+            await wait(600);
+            words[5].classList.add('k-out');
+            await wait(150);
+        }
 
-        // Act 7: "SMOOTH" (Stretch)
-        words[6].classList.add('k-active');
-        sfxSnare();
-        await wait(380);
-        words[6].classList.add('k-out');
-        await wait(80);
+        // Act 7: "UDINUS • GPA 3.45"
+        if (words[6]) {
+            words[6].classList.add('k-active');
+            playSfx('bass', 0.8);
+            await wait(650);
+            words[6].classList.add('k-out');
+            await wait(120);
+        }
 
-        // Act 8: "RESPONSIVE" (Bounce)
-        words[7].classList.add('k-active');
-        sfxTick();
-        await wait(380);
-        words[7].classList.add('k-out');
-        await wait(80);
+        // Act 8: "PUPR & APU EXPERIENCED"
+        if (words[7]) {
+            words[7].classList.add('k-active');
+            playSfx('whoosh', 0.9);
+            await wait(650);
+            words[7].classList.add('k-out');
+            await wait(120);
+        }
 
-        // Act 9: "WEB EXPERIENCES." (Stomp)
-        words[8].classList.add('k-active');
-        sfxStomp();
-        await wait(550);
-        words[8].classList.add('k-out');
-        await wait(150);
+        // Act 9: "HR & QA WEB SYSTEMS"
+        if (words[8]) {
+            words[8].classList.add('k-active');
+            playSfx('bass', 0.9);
+            await wait(700);
+            words[8].classList.add('k-out');
+            await wait(150);
+        }
 
-        // Act 10: "WELCOME." (Mega riser into drop)
-        words[9].classList.add('k-active');
-        sfxMegaDrop(); // Riser starts and hits exactly at 0.55s
-        await wait(550);
+        // Act 10: "SMOOTH. RESPONSIVE."
+        if (words[9]) {
+            words[9].classList.add('k-active');
+            playSfx('whoosh', 1.0);
+            await wait(650);
+            words[9].classList.add('k-out');
+            await wait(200);
+        }
 
-        words[9].classList.add('k-out');
+        // Act 11: "WELCOME."
+        if (words[10]) {
+            words[10].classList.add('k-active');
+            playSfx('boom', 1.0);
+            playSfx('bass', 1.0);
+            await wait(750);
+            words[10].classList.add('k-out');
+        }
+
         transitionBGMToPortfolio();
 
         // 💥 MEGA BOOM DROP! Open curtains AND trigger cinematic entrance of web content!
@@ -499,7 +270,7 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     function waitForUserGesture() {
         const enterPrompt = document.getElementById('splash-enter');
 
-        function onUserGesture() {
+        async function onUserGesture() {
             // Remove listener to prevent double-fires
             splash.removeEventListener('click', onUserGesture);
             splash.removeEventListener('touchstart', onUserGesture);
@@ -510,8 +281,11 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             // Hide the enter prompt
             if (enterPrompt) enterPrompt.classList.add('hidden');
 
+            // Decode all audio buffers before starting animation
+            await Promise.all(Object.keys(sfxUrls).map(k => decodeAudio(k)));
+
             // Start animation after prompt fully fades out
-            setTimeout(animate, 600);
+            setTimeout(animate, 500);
         }
 
         splash.addEventListener('click', onUserGesture);
