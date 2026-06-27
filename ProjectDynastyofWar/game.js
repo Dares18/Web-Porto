@@ -155,6 +155,7 @@ document.querySelectorAll('.class-card').forEach(card => {
         document.getElementById('enemy-sprite-img').src = gameState.enemy.img;
 
         updateHUD();
+        setButtonsDisabled(false);
         logMessage(`Match Started: ${gameState.player.class} VS ${gameState.enemy.class}! Prepare your turn.`);
         showScreen(screenBattle);
     });
@@ -332,8 +333,10 @@ function performAction(actorAction, opponentAction, isPlayer) {
 function checkGameOver() {
     if (gameState.player.hp <= 0 || gameState.enemy.hp <= 0) {
         setButtonsDisabled(true);
+        const isWin = gameState.player.hp > 0;
+        logMessage(isWin ? "💥 Boss HP reached 0! Victory imminent..." : "💀 Your HP reached 0! You have fallen...");
+        
         setTimeout(() => {
-            const isWin = gameState.player.hp > 0;
             if (isWin) sfx.win(); else sfx.lose();
 
             document.getElementById('result-icon-box').textContent = isWin ? "🏆" : "💀";
@@ -349,12 +352,13 @@ function checkGameOver() {
                 <div><span>ATK/DEF:</span> <b>${gameState.player.atk}/${gameState.player.def}</b></div>
             `;
             showScreen(screenResult);
-        }, 600);
+        }, 2000);
     }
 }
 
 // Play Again Button
 document.getElementById('btn-play-again').addEventListener('click', () => {
     sfx.buff();
+    gameState.isBusy = false;
     showScreen(screenSelect);
 });
