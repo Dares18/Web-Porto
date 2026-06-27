@@ -7,11 +7,14 @@ const htmlTranslations = {
     },
     "avail-work": { en: "Available for work", id: "Tersedia untuk bekerja" },
     "sec-edu": { en: "Education", id: "Pendidikan" },
+    "edu-univ-1": { en: "Dian Nuswantoro University", id: "Universitas Dian Nuswantoro" },
+    "edu-major-1": { en: "Bachelor of Informatics Engineering (S1 Teknik Informatika)", id: "Sarjana Teknik Informatika (S1)" },
     "edu-desc-1": {
         en: `Studied core computer science principles, software engineering, algorithms, and computer systems. Specialized independently and academically in <span class="edu-highlight">Front-End Development</span> and <span class="edu-highlight">UI/UX Design</span>, focusing on building sleek, responsive, and user-centric web applications.`,
         id: `Mempelajari prinsip dasar ilmu komputer, rekayasa perangkat lunak, algoritma, dan sistem komputer. Berfokus secara mandiri dan akademis dalam <span class="edu-highlight">Pengembangan Front-End</span> dan <span class="edu-highlight">Desain UI/UX</span>, menciptakan aplikasi web yang elegan, responsif, dan berpusat pada pengguna.`
     },
     "sec-exp": { en: "Work Experience", id: "Pengalaman Kerja" },
+    "exp-comp-apu": { en: `<i class="ph ph-buildings"></i> Agung Putra University`, id: `<i class="ph ph-buildings"></i> Universitas Agung Putra` },
     "exp-badge-1": { en: "Internship", id: "Magang" },
     "exp-role-1": { en: "IT Help Desk Support", id: "Dukungan IT Help Desk" },
     "exp-desc-1": {
