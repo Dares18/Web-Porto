@@ -480,6 +480,17 @@ body {
     40%, 80% { transform: translate3d(12px, 0, 0); filter: brightness(1.5); }
 }
 
+/* Screen Shake for Crits & Heavy Impacts */
+.arena-stage.screen-shake {
+    animation: stageShake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes stageShake {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    15%, 45%, 75% { transform: translate3d(-10px, 8px, 0) scale(1.02); filter: brightness(1.15); }
+    30%, 60%, 90% { transform: translate3d(10px, -8px, 0) scale(1.02); filter: brightness(1.25); }
+}
+
 /* Visual Effects (Slashes, Shields, Heals) */
 .visual-effect {
     position: absolute;

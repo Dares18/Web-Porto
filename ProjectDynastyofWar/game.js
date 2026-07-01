@@ -1,11 +1,26 @@
 // Dynasty of War — 2D AdventureQuest Worlds RPG Engine
 // Built with vanilla JS and Web Audio API synthesizer
 
-/* --- Web Audio API Sound Synthesizer --- */
+/* --- Enhanced Audio Engine (MP3 Assets + Web Audio API Synthesizer) --- */
 class SoundFX {
     constructor() {
         this.ctx = null;
         this.muted = false;
+        this.soundMap = {
+            attackUp: 'assets/attack up.mp3',
+            defenseUp: 'assets/defense up.mp3',
+            defense: 'assets/defense.mp3',
+            heal: 'assets/heal.mp3',
+            hit: 'assets/hit.mp3',
+            knightSpawn: 'assets/knight spawn.mp3',
+            mageSpawn: 'assets/mage spawn.mp3',
+            slash: 'assets/slash.mp3',
+            spellCast: 'assets/spell cast.mp3',
+            swordShield: 'assets/sword shield.mp3',
+            swordsmanSpawn: 'assets/swordman spawn.mp3',
+            victory: 'assets/victory.mp3'
+        };
+        this.audioPool = {};
     }
 
     init() {
@@ -16,6 +31,34 @@ class SoundFX {
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume();
         }
+        if (!this.preloaded) {
+            this.preloaded = true;
+            Object.entries(this.soundMap).forEach(([key, src]) => {
+                const audio = new Audio();
+                audio.src = src;
+                audio.preload = 'auto';
+                this.audioPool[key] = audio;
+            });
+        }
+    }
+
+    playAudio(key, volume = 0.85, delay = 0) {
+        if (this.muted) return;
+        this.init();
+        const src = this.soundMap[key];
+        if (!src) return;
+
+        setTimeout(() => {
+            try {
+                const audio = new Audio(src);
+                audio.volume = volume;
+                audio.play().catch(e => {
+                    console.warn(`[Audio] Playback blocked or failed for ${key}:`, e);
+                });
+            } catch (err) {
+                console.error("[Audio] Error:", err);
+            }
+        }, delay);
     }
 
     playTone(freq, type, duration, delay = 0, vol = 0.15) {
@@ -44,39 +87,78 @@ class SoundFX {
         }, delay);
     }
 
-    slash() {
-        this.playTone(300, 'sawtooth', 0.15, 0, 0.2);
-        this.playTone(150, 'square', 0.2, 50, 0.15);
+    uiClick() {
+        this.playTone(880, 'triangle', 0.04, 0, 0.08);
+    }
+
+    slash(isMage = false) {
+        if (isMage) {
+            this.playAudio('spellCast', 0.9);
+            this.playTone(440, 'sine', 0.2, 0, 0.1);
+        } else {
+            this.playAudio('slash', 0.85);
+            this.playTone(220, 'sawtooth', 0.15, 0, 0.12);
+        }
+    }
+
+    hit(isCrit = false) {
+        this.playAudio('hit', isCrit ? 1.0 : 0.85);
+        if (isCrit) {
+            this.playTone(120, 'square', 0.3, 0, 0.25);
+        }
     }
 
     block() {
-        this.playTone(800, 'triangle', 0.1, 0, 0.25);
-        this.playTone(1200, 'sine', 0.15, 30, 0.15);
+        this.playAudio('swordShield', 0.9);
+        this.playTone(800, 'triangle', 0.1, 0, 0.2);
     }
 
-    buff() {
-        this.playTone(400, 'sine', 0.15, 0, 0.15);
-        this.playTone(600, 'sine', 0.15, 100, 0.15);
-        this.playTone(800, 'triangle', 0.25, 200, 0.2);
+    defend() {
+        this.playAudio('defense', 0.85);
+        this.playTone(600, 'sine', 0.15, 0, 0.15);
+    }
+
+    attackUp() {
+        this.playAudio('attackUp', 0.85);
+        this.playTone(600, 'sine', 0.15, 0, 0.12);
+    }
+
+    defenseUp() {
+        this.playAudio('defenseUp', 0.85);
+        this.playTone(500, 'triangle', 0.18, 0, 0.12);
     }
 
     heal() {
-        this.playTone(523.25, 'sine', 0.2, 0, 0.2);
-        this.playTone(659.25, 'sine', 0.2, 120, 0.2);
-        this.playTone(783.99, 'sine', 0.35, 240, 0.2);
+        this.playAudio('heal', 0.9);
+        this.playTone(523.25, 'sine', 0.2, 0, 0.15);
+        this.playTone(659.25, 'sine', 0.2, 120, 0.15);
+    }
+
+    spawnClass(className) {
+        if (className.includes('Knight')) {
+            this.playAudio('knightSpawn', 0.95);
+        } else if (className.includes('Mage')) {
+            this.playAudio('mageSpawn', 0.95);
+        } else if (className.includes('Swordsman')) {
+            this.playAudio('swordsmanSpawn', 0.95);
+        } else {
+            this.attackUp();
+        }
     }
 
     win() {
-        this.playTone(523.25, 'triangle', 0.2, 0, 0.2);
-        this.playTone(659.25, 'triangle', 0.2, 150, 0.2);
-        this.playTone(783.99, 'triangle', 0.2, 300, 0.2);
-        this.playTone(1046.50, 'sawtooth', 0.5, 450, 0.25);
+        this.playAudio('victory', 1.0);
+        this.playTone(523.25, 'triangle', 0.2, 0, 0.15);
+        this.playTone(659.25, 'triangle', 0.2, 150, 0.15);
+        this.playTone(783.99, 'triangle', 0.2, 300, 0.15);
+        this.playTone(1046.50, 'sawtooth', 0.5, 450, 0.2);
     }
 
     lose() {
+        this.playAudio('hit', 0.95);
         this.playTone(300, 'sawtooth', 0.25, 0, 0.2);
-        this.playTone(260, 'sawtooth', 0.25, 200, 0.2);
-        this.playTone(200, 'sawtooth', 0.5, 400, 0.25);
+        this.playTone(240, 'sawtooth', 0.25, 200, 0.2);
+        this.playTone(180, 'sawtooth', 0.5, 400, 0.25);
     }
 }
 
@@ -133,9 +215,8 @@ function logMessage(text) {
 document.querySelectorAll('.class-card').forEach(card => {
     card.addEventListener('click', () => {
         sfx.init();
-        sfx.buff();
-
         const cls = card.getAttribute('data-class');
+        sfx.spawnClass(cls || card.querySelector('h3').textContent);
         const img = card.getAttribute('data-img');
         const hp = parseInt(card.getAttribute('data-hp'));
         const atk = parseInt(card.getAttribute('data-atk'));
@@ -212,7 +293,7 @@ function spawnVisualEffect(effectClass, isPlayerTarget = false) {
 }
 
 function triggerAnim(elementId, animClass, duration = 500) {
-    const el = document.getElementById(elementId);
+    const el = document.getElementById(elementId) || document.querySelector(elementId);
     if (!el) return;
     el.classList.add(animClass);
     setTimeout(() => el.classList.remove(animClass), duration);
@@ -222,6 +303,7 @@ function triggerAnim(elementId, animClass, duration = 500) {
 document.querySelectorAll('.skill-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         if (gameState.isBusy) return;
+        sfx.uiClick();
         const pAction = parseInt(btn.getAttribute('data-action'));
         const cAction = Math.floor(Math.random() * 5) + 1; // Enemy AI random 1-5
         executeTurn(pAction, cAction);
@@ -271,6 +353,8 @@ function performAction(actorAction, opponentAction, isPlayer) {
 
     if (actorAction === 1) { // Attack
         triggerAnim(actorBoxId, 'attacking', 500);
+        const isMage = actor.class && actor.class.includes('Mage');
+        sfx.slash(isMage);
 
         setTimeout(() => {
             if (opponentAction === 2) { // Opponent Defended
@@ -288,23 +372,24 @@ function performAction(actorAction, opponentAction, isPlayer) {
                     logMessage(`${isPlayer ? 'You' : 'Boss'} pierced defense for ${pierceDmg} DMG!`);
                 }
             } else { // Normal Hit
-                sfx.slash();
                 const isCrit = Math.random() < 0.25;
+                sfx.hit(isCrit);
                 const finalDmg = isCrit ? Math.round(actor.atk * 1.5) : actor.atk;
                 opponent.hp -= finalDmg;
                 triggerAnim(opponentBoxId, 'hit', 400);
+                if (isCrit) triggerAnim('.arena-stage', 'screen-shake', 350);
                 spawnVisualEffect('slash-fx', !isPlayer);
                 spawnFloatingText(isCrit ? `CRIT -${finalDmg}` : `-${finalDmg}`, isCrit ? "crit" : "dmg", !isPlayer);
             }
         }, 250);
 
     } else if (actorAction === 2) { // Defend
-        sfx.block();
+        sfx.defend();
         spawnVisualEffect('shield-fx', isPlayer);
         spawnFloatingText("SHIELD UP", "block", isPlayer);
 
     } else if (actorAction === 3) { // Atk Up
-        sfx.buff();
+        sfx.attackUp();
         const boost = Math.floor(Math.random() * 3) + 2; // +2 to +4
         actor.atk += boost;
         spawnVisualEffect('shield-fx', isPlayer);
@@ -312,7 +397,7 @@ function performAction(actorAction, opponentAction, isPlayer) {
         logMessage(`${isPlayer ? 'Your' : "Boss's"} Attack power surged to ${actor.atk}!`);
 
     } else if (actorAction === 4) { // Def Up
-        sfx.buff();
+        sfx.defenseUp();
         const boost = Math.floor(Math.random() * 3) + 2;
         actor.def += boost;
         spawnVisualEffect('shield-fx', isPlayer);
@@ -358,7 +443,8 @@ function checkGameOver() {
 
 // Play Again Button
 document.getElementById('btn-play-again').addEventListener('click', () => {
-    sfx.buff();
+    sfx.uiClick();
+    sfx.attackUp();
     gameState.isBusy = false;
     showScreen(screenSelect);
 });
