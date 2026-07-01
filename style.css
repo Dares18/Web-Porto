@@ -1894,37 +1894,63 @@ body.light-theme .dock-item::after {
     }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 520px) {
     .dock {
-        bottom: 0.8rem;
-        padding: 0.25rem 0.35rem;
-        max-width: calc(100vw - 0.6rem);
+        bottom: 1rem;
+        padding: 0.3rem 0.4rem;
+        max-width: calc(100vw - 0.8rem);
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .dock::-webkit-scrollbar {
+        display: none;
     }
 
     .dock-list {
-        gap: 0.1rem;
+        gap: 0.15rem;
     }
 
     .dock-link {
-        width: 28px;
-        height: 28px;
-        font-size: 0.95rem;
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .dock {
+        bottom: 0.8rem;
+        padding: 0.25rem 0.3rem;
+        max-width: calc(100vw - 0.5rem);
+    }
+
+    .dock-list {
+        gap: 0.08rem;
+    }
+
+    .dock-link {
+        width: 27px;
+        height: 27px;
+        font-size: 0.9rem;
     }
 }
 
 @media (max-width: 350px) {
     .dock {
-        padding: 0.2rem 0.25rem;
+        padding: 0.2rem 0.2rem;
     }
 
     .dock-list {
-        gap: 0.05rem;
+        gap: 0.04rem;
     }
 
     .dock-link {
-        width: 25px;
-        height: 25px;
-        font-size: 0.85rem;
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
     }
 }
 
