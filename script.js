@@ -877,7 +877,7 @@ let sunflowerGain = null;
 let isSunflowerPlaying = false;
 let musicIsMuted = false;
 let musicFadeInterval = null;
-const maxMusicVolume = 0.65;
+const maxMusicVolume = 0.28; // Ambient background sound level (~28%)
 const sunflowerUrl = encodeURI('Assets/SoundEffects/Post Malone - Sunflower (Spider-Man_ Into the Spider-Verse).flac');
 
 // Preload & Unlock inside initial user gesture
