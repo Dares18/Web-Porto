@@ -1702,6 +1702,20 @@ body.light-theme .gallery-cell {
     color: var(--accent-color);
 }
 
+.music-btn.playing {
+    color: #10b981;
+    animation: musicPulse 2s infinite ease-in-out;
+}
+
+@keyframes musicPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+}
+
+.music-btn.muted {
+    opacity: 0.45;
+}
+
 
 .dock-divider {
     width: 1px;

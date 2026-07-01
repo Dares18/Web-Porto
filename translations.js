@@ -130,7 +130,12 @@ const exactMatchDict = {
     "Turn-Based Combat Command HUD — Action menu interface where players execute strategic moves against enemy AI, choosing between Attack, Attack Up (+1 to +3), Defense Up, or Heal.":
     "HUD Komando Pertarungan Turn-Based — Antarmuka menu aksi di mana pemain mengeksekusi langkah strategis melawan AI musuh, memilih antara Serang, Peningkatan Serangan (+1 hingga +3), Peningkatan Pertahanan, atau Sembuhkan.",
     "C++ Terminal & Core Engine Execution — View of the backend C++ source code structure and real-time command-line battle execution console utilizing Object-Oriented architecture.":
-    "Terminal C++ & Eksekusi Mesin Utama — Tampilan struktur kode sumber C++ dan konsol eksekusi pertarungan baris perintah secara real-time yang menggunakan arsitektur Berorientasi Objek."
+    "Terminal C++ & Eksekusi Mesin Utama — Tampilan struktur kode sumber C++ dan konsol eksekusi pertarungan baris perintah secara real-time yang menggunakan arsitektur Berorientasi Objek.",
+
+    // Background Music Tooltips
+    "Background Music: Sunflower": "Musik Latar: Sunflower",
+    "Background Music: Playing (Sunflower)": "Musik Latar: Diputar (Sunflower)",
+    "Background Music: Muted": "Musik Latar: Senyap"
 };
 
 let currentAppLang = localStorage.getItem('porto_lang') || 'en';

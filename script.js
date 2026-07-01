@@ -259,6 +259,11 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         await wait(1100);
         splash.classList.add('done');
 
+        // Play Sunflower background music with smooth fade-in after opening animation ends
+        if (typeof window.startPortfolioBGMWithFadeIn === 'function') {
+            window.startPortfolioBGMWithFadeIn();
+        }
+
         if (audioCtx && audioCtx.state !== 'closed') {
             setTimeout(() => {
                 audioCtx.close().catch(() => { });
@@ -863,6 +868,108 @@ if (fsBtn) {
     document.addEventListener('fullscreenchange', updateFullscreenIcon);
     document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
     document.addEventListener('msfullscreenchange', updateFullscreenIcon);
+}
+
+// --- Portfolio Background Music (Sunflower) Engine ---
+let portfolioMusic = null;
+let musicFadeInterval = null;
+let musicIsMuted = false;
+const maxMusicVolume = 0.65;
+
+window.startPortfolioBGMWithFadeIn = function() {
+    if (!portfolioMusic) {
+        portfolioMusic = new Audio(encodeURI('Assets/SoundEffects/Post Malone - Sunflower (Spider-Man_ Into the Spider-Verse).flac'));
+        portfolioMusic.loop = true;
+    }
+    if (musicIsMuted) return;
+
+    portfolioMusic.volume = 0;
+    portfolioMusic.play().then(() => {
+        updateMusicButtonState(true);
+        let currentVol = 0;
+        const step = maxMusicVolume / 70; // Smooth ~3.5s fade-in
+        clearInterval(musicFadeInterval);
+        musicFadeInterval = setInterval(() => {
+            if (musicIsMuted || !portfolioMusic) {
+                clearInterval(musicFadeInterval);
+                return;
+            }
+            currentVol += step;
+            if (currentVol >= maxMusicVolume) {
+                currentVol = maxMusicVolume;
+                portfolioMusic.volume = currentVol;
+                clearInterval(musicFadeInterval);
+            } else {
+                portfolioMusic.volume = currentVol;
+            }
+        }, 50);
+    }).catch(err => {
+        console.warn("Could not play Sunflower background music:", err);
+        updateMusicButtonState(false);
+    });
+};
+
+function updateMusicButtonState(isPlaying) {
+    const musicBtn = document.getElementById('music-toggle');
+    if (!musicBtn) return;
+    const icon = musicBtn.querySelector('i');
+    const dockItem = musicBtn.closest('.dock-item');
+    const isId = localStorage.getItem('porto_lang') === 'id';
+
+    if (isPlaying) {
+        musicBtn.classList.add('playing');
+        musicBtn.classList.remove('muted');
+        if (icon) icon.className = 'ph ph-speaker-high';
+        const tipText = isId ? 'Musik Latar: Diputar (Sunflower)' : 'Background Music: Playing (Sunflower)';
+        const enTipText = 'Background Music: Playing (Sunflower)';
+        if (dockItem) {
+            dockItem.setAttribute('data-tooltip', tipText);
+            dockItem.setAttribute('data-en-tip', enTipText);
+        }
+    } else {
+        musicBtn.classList.remove('playing');
+        musicBtn.classList.add('muted');
+        if (icon) icon.className = 'ph ph-speaker-slash';
+        const tipText = isId ? 'Musik Latar: Senyap' : 'Background Music: Muted';
+        const enTipText = 'Background Music: Muted';
+        if (dockItem) {
+            dockItem.setAttribute('data-tooltip', tipText);
+            dockItem.setAttribute('data-en-tip', enTipText);
+        }
+    }
+}
+
+const musicToggleBtn = document.getElementById('music-toggle');
+if (musicToggleBtn) {
+    musicToggleBtn.addEventListener('click', () => {
+        if (!portfolioMusic) {
+            startPortfolioBGMWithFadeIn();
+            return;
+        }
+        clearInterval(musicFadeInterval);
+        if (musicIsMuted || portfolioMusic.paused) {
+            musicIsMuted = false;
+            portfolioMusic.play().then(() => {
+                portfolioMusic.volume = maxMusicVolume;
+                updateMusicButtonState(true);
+            }).catch(() => {});
+        } else {
+            musicIsMuted = true;
+            let currentVol = portfolioMusic.volume;
+            musicFadeInterval = setInterval(() => {
+                currentVol -= 0.05;
+                if (currentVol <= 0) {
+                    currentVol = 0;
+                    portfolioMusic.volume = 0;
+                    portfolioMusic.pause();
+                    clearInterval(musicFadeInterval);
+                } else {
+                    portfolioMusic.volume = currentVol;
+                }
+            }, 30);
+            updateMusicButtonState(false);
+        }
+    });
 }
 
 // --- Dynasty of War C++ Engine Web Simulator ---
