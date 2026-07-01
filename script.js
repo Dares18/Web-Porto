@@ -263,12 +263,6 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         if (typeof window.startPortfolioBGMWithFadeIn === 'function') {
             window.startPortfolioBGMWithFadeIn();
         }
-
-        if (audioCtx && audioCtx.state !== 'closed') {
-            setTimeout(() => {
-                audioCtx.close().catch(() => { });
-            }, 3500);
-        }
     }
 
     // Wait for user click/tap to start animation (guarantees AudioContext unlock)
@@ -294,6 +288,11 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
             // Init audio inside user gesture — browser guarantees it will be "running"
             initAudio();
+
+            // Preload and unlock Sunflower inside user gesture
+            if (typeof window.preloadAndUnlockSunflower === 'function') {
+                window.preloadAndUnlockSunflower();
+            }
 
             // Hide the enter prompt
             if (enterPrompt) enterPrompt.classList.add('hidden');
@@ -872,39 +871,97 @@ if (fsBtn) {
 
 // --- Portfolio Background Music (Sunflower) Engine ---
 let portfolioMusic = null;
-let musicFadeInterval = null;
+let sunflowerBuffer = null;
+let sunflowerSource = null;
+let sunflowerGain = null;
+let isSunflowerPlaying = false;
 let musicIsMuted = false;
+let musicFadeInterval = null;
 const maxMusicVolume = 0.65;
+const sunflowerUrl = encodeURI('Assets/SoundEffects/Post Malone - Sunflower (Spider-Man_ Into the Spider-Verse).flac');
 
-window.startPortfolioBGMWithFadeIn = function() {
+// Preload & Unlock inside initial user gesture
+window.preloadAndUnlockSunflower = function() {
+    // 1. Start fetching ArrayBuffer for Web Audio API
+    fetch(sunflowerUrl)
+        .then(res => res.arrayBuffer())
+        .then(buf => {
+            if (typeof audioCtx !== 'undefined' && audioCtx) {
+                audioCtx.decodeAudioData(buf, decoded => {
+                    sunflowerBuffer = decoded;
+                }, () => {});
+            }
+        }).catch(() => {});
+
+    // 2. Unlock HTML5 Audio engine silently
     if (!portfolioMusic) {
-        portfolioMusic = new Audio(encodeURI('Assets/SoundEffects/Post Malone - Sunflower (Spider-Man_ Into the Spider-Verse).flac'));
+        portfolioMusic = new Audio(sunflowerUrl);
         portfolioMusic.loop = true;
     }
+    portfolioMusic.volume = 0;
+    portfolioMusic.play().catch(() => {});
+};
+
+window.startPortfolioBGMWithFadeIn = async function() {
     if (musicIsMuted) return;
 
+    // Ensure AudioContext is active
+    if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+        try { await audioCtx.resume(); } catch(e) {}
+    }
+
+    // Attempt playback via Web Audio API first (most reliable on file:// and mobile)
+    if (sunflowerBuffer && typeof audioCtx !== 'undefined' && audioCtx) {
+        try {
+            if (sunflowerSource) {
+                try { sunflowerSource.stop(); } catch(e) {}
+            }
+            sunflowerSource = audioCtx.createBufferSource();
+            sunflowerSource.buffer = sunflowerBuffer;
+            sunflowerSource.loop = true;
+
+            sunflowerGain = audioCtx.createGain();
+            sunflowerGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+            sunflowerGain.gain.linearRampToValueAtTime(maxMusicVolume, audioCtx.currentTime + 3.5);
+
+            sunflowerSource.connect(sunflowerGain).connect(audioCtx.destination);
+            sunflowerSource.start(0);
+            isSunflowerPlaying = true;
+            updateMusicButtonState(true);
+            return;
+        } catch (e) {
+            console.warn("Web Audio BGM failed, switching to HTML5 Audio:", e);
+        }
+    }
+
+    // Fallback to HTML5 Audio
+    if (!portfolioMusic) {
+        portfolioMusic = new Audio(sunflowerUrl);
+        portfolioMusic.loop = true;
+    }
     portfolioMusic.volume = 0;
     portfolioMusic.play().then(() => {
+        isSunflowerPlaying = true;
         updateMusicButtonState(true);
-        let currentVol = 0;
-        const step = maxMusicVolume / 70; // Smooth ~3.5s fade-in
+        let curVol = 0;
         clearInterval(musicFadeInterval);
         musicFadeInterval = setInterval(() => {
-            if (musicIsMuted || !portfolioMusic) {
+            if (musicIsMuted || !isSunflowerPlaying) {
                 clearInterval(musicFadeInterval);
                 return;
             }
-            currentVol += step;
-            if (currentVol >= maxMusicVolume) {
-                currentVol = maxMusicVolume;
-                portfolioMusic.volume = currentVol;
+            curVol += 0.01;
+            if (curVol >= maxMusicVolume) {
+                curVol = maxMusicVolume;
+                portfolioMusic.volume = curVol;
                 clearInterval(musicFadeInterval);
             } else {
-                portfolioMusic.volume = currentVol;
+                portfolioMusic.volume = curVol;
             }
         }, 50);
-    }).catch(err => {
-        console.warn("Could not play Sunflower background music:", err);
+    }).catch(e => {
+        console.warn("HTML5 Audio autoplay prevented or failed:", e);
+        isSunflowerPlaying = false;
         updateMusicButtonState(false);
     });
 };
@@ -941,35 +998,81 @@ function updateMusicButtonState(isPlaying) {
 
 const musicToggleBtn = document.getElementById('music-toggle');
 if (musicToggleBtn) {
-    musicToggleBtn.addEventListener('click', () => {
-        if (!portfolioMusic) {
-            startPortfolioBGMWithFadeIn();
-            return;
+    let lastToggleTime = 0;
+    function handleMusicToggle(e) {
+        if (e) {
+            if (e.cancelable && e.type === 'touchstart') e.preventDefault();
+            e.stopPropagation();
         }
+        const now = Date.now();
+        if (now - lastToggleTime < 350) return; // Prevent double-trigger from touchstart + click
+        lastToggleTime = now;
+
         clearInterval(musicFadeInterval);
-        if (musicIsMuted || portfolioMusic.paused) {
-            musicIsMuted = false;
-            portfolioMusic.play().then(() => {
-                portfolioMusic.volume = maxMusicVolume;
-                updateMusicButtonState(true);
-            }).catch(() => {});
-        } else {
+
+        if (isSunflowerPlaying) {
+            // Mute / Pause music
             musicIsMuted = true;
-            let currentVol = portfolioMusic.volume;
-            musicFadeInterval = setInterval(() => {
-                currentVol -= 0.05;
-                if (currentVol <= 0) {
-                    currentVol = 0;
-                    portfolioMusic.volume = 0;
-                    portfolioMusic.pause();
-                    clearInterval(musicFadeInterval);
-                } else {
-                    portfolioMusic.volume = currentVol;
-                }
-            }, 30);
+            isSunflowerPlaying = false;
             updateMusicButtonState(false);
+
+            if (sunflowerGain && typeof audioCtx !== 'undefined' && audioCtx) {
+                try {
+                    sunflowerGain.gain.setValueAtTime(sunflowerGain.gain.value, audioCtx.currentTime);
+                    sunflowerGain.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                    setTimeout(() => {
+                        if (musicIsMuted && sunflowerSource) {
+                            try { sunflowerSource.stop(); sunflowerSource = null; } catch(err) {}
+                        }
+                    }, 350);
+                } catch (err) {}
+            }
+            if (portfolioMusic) {
+                portfolioMusic.pause();
+            }
+        } else {
+            // Unmute / Resume music
+            musicIsMuted = false;
+            if (typeof audioCtx !== 'undefined' && audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(()=>{});
+            }
+
+            if (sunflowerBuffer && typeof audioCtx !== 'undefined' && audioCtx) {
+                try {
+                    if (sunflowerSource) { try { sunflowerSource.stop(); } catch(err){} }
+                    sunflowerSource = audioCtx.createBufferSource();
+                    sunflowerSource.buffer = sunflowerBuffer;
+                    sunflowerSource.loop = true;
+
+                    sunflowerGain = audioCtx.createGain();
+                    sunflowerGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                    sunflowerGain.gain.linearRampToValueAtTime(maxMusicVolume, audioCtx.currentTime + 0.5);
+
+                    sunflowerSource.connect(sunflowerGain).connect(audioCtx.destination);
+                    sunflowerSource.start(0);
+                    isSunflowerPlaying = true;
+                    updateMusicButtonState(true);
+                    return;
+                } catch (err) {}
+            }
+
+            if (!portfolioMusic) {
+                portfolioMusic = new Audio(sunflowerUrl);
+                portfolioMusic.loop = true;
+            }
+            portfolioMusic.volume = maxMusicVolume;
+            portfolioMusic.play().then(() => {
+                isSunflowerPlaying = true;
+                updateMusicButtonState(true);
+            }).catch(() => {
+                // If not ready or buffer still loading, call start with fade-in
+                startPortfolioBGMWithFadeIn();
+            });
         }
-    });
+    }
+
+    musicToggleBtn.addEventListener('click', handleMusicToggle);
+    musicToggleBtn.addEventListener('touchstart', handleMusicToggle, { passive: false });
 }
 
 // --- Dynasty of War C++ Engine Web Simulator ---
